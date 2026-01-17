@@ -174,6 +174,10 @@ async def index(request: Request):
 async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request):
+    return templates.TemplateResponse("profile.html", {"request": request})
+
 @app.get("/coach", response_class=HTMLResponse)
 async def coach(request: Request):
     return templates.TemplateResponse("coach.html", {"request": request})

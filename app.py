@@ -805,6 +805,11 @@ def home():
     """主页"""
     return render_template('home.html')
 
+@app.route('/profile')
+def profile():
+    """个人中心"""
+    return render_template('profile.html')
+
 
 @app.route('/coach')
 def coach():
