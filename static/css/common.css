@@ -14,11 +14,71 @@ body {
     align-items: center;
 }
 
+body.home-page,
+body.login-page,
+body.coach-page,
+body.lounge-page {
+    --home-ink: #4a3b39;
+    --home-muted: #7a6c6c;
+    --home-accent: #e6a8a4;
+    --home-accent-2: #c7b2ff;
+    --home-card: rgba(255, 255, 255, 0.86);
+    --home-border: rgba(230, 168, 164, 0.24);
+    --home-line: rgba(74, 59, 57, 0.12);
+    --home-shadow: 0 26px 60px rgba(74, 59, 57, 0.14);
+    --home-chip: rgba(230, 168, 164, 0.18);
+    --home-chip-text: #815d5b;
+    font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(1200px circle at 12% 8%, #fceeea 0%, #f7f3ff 35%, #fdf8f1 75%);
+    color: var(--home-ink);
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 24px 0 40px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body.home-page::before,
+body.login-page::before,
+body.coach-page::before,
+body.lounge-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(230, 168, 164, 0.22) 1px, transparent 0);
+    background-size: 28px 28px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+}
+
 .container {
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
     padding: 20px;
+}
+
+body.home-page .container {
+    max-width: 540px;
+    padding: 12px 16px 32px;
+    position: relative;
+    z-index: 1;
+}
+
+body.login-page .container {
+    max-width: 440px;
+    padding: 12px 16px 32px;
+    position: relative;
+    z-index: 1;
+}
+
+body.coach-page .container,
+body.lounge-page .container {
+    max-width: 560px;
+    padding: 12px 16px 32px;
+    position: relative;
+    z-index: 1;
 }
 
 .card {
@@ -108,6 +168,89 @@ body {
 
 .link a:hover {
     text-decoration: underline;
+}
+
+/* 登录页样式 */
+body.login-page .card {
+    background: var(--home-card);
+    border-radius: 26px;
+    padding: 28px 24px;
+    border: 1px solid var(--home-border);
+    box-shadow: var(--home-shadow);
+    backdrop-filter: blur(12px);
+}
+
+body.login-page .login-intro {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--home-chip);
+    color: var(--home-chip-text);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: inline-flex;
+}
+
+body.login-page .title {
+    text-align: left;
+    font-family: "ZCOOL XiaoWei", serif;
+    font-size: clamp(26px, 7vw, 34px);
+    color: var(--home-ink);
+    margin-bottom: 8px;
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+
+body.login-page .login-subtitle {
+    color: var(--home-muted);
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+body.login-page .input-group label {
+    color: var(--home-muted);
+    font-weight: 500;
+}
+
+body.login-page .input-group input {
+    border: 1px solid var(--home-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+body.login-page .input-group input:focus {
+    border-color: var(--home-accent);
+    box-shadow: 0 0 0 3px rgba(230, 168, 164, 0.15);
+}
+
+body.login-page .btn {
+    border-radius: 999px;
+}
+
+body.login-page .btn-primary {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    box-shadow: 0 12px 26px rgba(230, 168, 164, 0.35);
+}
+
+body.login-page .btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--home-ink);
+    border: 1px solid var(--home-line);
+}
+
+body.login-page .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.98);
+}
+
+body.login-page .link {
+    text-align: left;
+    color: var(--home-muted);
+}
+
+body.login-page .link a {
+    color: var(--home-accent);
 }
 
 /* 聊天室样式 */
@@ -263,82 +406,429 @@ body {
     transform: scale(1.1);
 }
 
-/* 主页样式 */
-.home-container {
-    background: white;
+/* 温柔疗愈聊天页 */
+body.coach-page .chat-container,
+body.lounge-page .chat-container {
+    background: var(--home-card);
+    border-radius: 26px;
+    border: 1px solid var(--home-border);
+    box-shadow: var(--home-shadow);
+    backdrop-filter: blur(16px);
+}
+
+body.coach-page .chat-header,
+body.lounge-page .chat-header {
+    background: linear-gradient(135deg, rgba(230, 168, 164, 0.22), rgba(199, 178, 255, 0.28));
+    color: var(--home-ink);
+    border-bottom: 1px solid var(--home-border);
+}
+
+body.coach-page .chat-header h2,
+body.lounge-page .chat-header h2 {
+    font-family: "ZCOOL XiaoWei", serif;
+}
+
+body.coach-page .back-btn,
+body.lounge-page .back-btn {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--home-ink);
+    border: 1px solid var(--home-border);
+}
+
+body.coach-page .back-btn:hover,
+body.lounge-page .back-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+body.coach-page .chat-messages,
+body.lounge-page .chat-messages {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+body.coach-page .message-content,
+body.lounge-page .message-content {
     border-radius: 20px;
-    padding: 40px 30px;
+}
+
+body.coach-page .message.user .message-content,
+body.lounge-page .message.user .message-content {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    color: white;
+}
+
+body.coach-page .message.assistant .message-content,
+body.lounge-page .message.assistant .message-content {
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--home-ink);
+    border: 1px solid var(--home-border);
+    box-shadow: 0 8px 20px rgba(74, 59, 57, 0.08);
+}
+
+body.coach-page .message.partner .message-content,
+body.lounge-page .message.partner .message-content {
+    background: rgba(199, 178, 255, 0.2);
+    color: var(--home-ink);
+    border: 1px solid rgba(199, 178, 255, 0.35);
+}
+
+body.coach-page .chat-input,
+body.lounge-page .chat-input {
+    background: rgba(255, 255, 255, 0.85);
+    border-top: 1px solid var(--home-border);
+}
+
+body.coach-page .chat-input input,
+body.lounge-page .chat-input input {
+    border: 1px solid var(--home-border);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body.coach-page .chat-input input:focus,
+body.lounge-page .chat-input input:focus {
+    border-color: var(--home-accent);
+    box-shadow: 0 0 0 3px rgba(230, 168, 164, 0.15);
+}
+
+body.coach-page .send-btn,
+body.lounge-page .send-btn {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    box-shadow: 0 10px 22px rgba(230, 168, 164, 0.3);
+}
+
+body.lounge-page .ai-icon {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    box-shadow: 0 10px 22px rgba(230, 168, 164, 0.35);
+}
+
+/* 温柔疗愈装饰 */
+body.login-page .gentle-shape,
+body.coach-page .gentle-shape,
+body.lounge-page .gentle-shape {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(6px);
+    opacity: 0.85;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body.login-page .gentle-shape-1,
+body.coach-page .gentle-shape-1,
+body.lounge-page .gentle-shape-1 {
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 214, 208, 0.7);
+    top: 6%;
+    left: -90px;
+}
+
+body.login-page .gentle-shape-2,
+body.coach-page .gentle-shape-2,
+body.lounge-page .gentle-shape-2 {
+    width: 180px;
+    height: 180px;
+    background: rgba(201, 191, 255, 0.55);
+    bottom: 8%;
+    right: -70px;
+}
+
+body.login-page .gentle-shape-3,
+body.coach-page .gentle-shape-3,
+body.lounge-page .gentle-shape-3 {
+    width: 140px;
+    height: 140px;
+    background: rgba(255, 233, 214, 0.7);
+    top: 50%;
+    right: 14%;
+}
+
+/* 主页样式 */
+body.home-page .home-container {
+    background: var(--home-card);
+    border-radius: 26px;
+    padding: 28px 24px;
     width: 100%;
-    max-width: 420px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    max-width: 540px;
+    border: 1px solid var(--home-border);
+    box-shadow: var(--home-shadow);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
 }
 
-.home-banner {
-    text-align: center;
-    margin-bottom: 40px;
+body.home-page .home-container::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    right: -120px;
+    top: -90px;
+    border-radius: 60px;
+    background: linear-gradient(135deg, rgba(230, 168, 164, 0.4), transparent);
+    opacity: 0.6;
 }
 
-.home-banner h1 {
-    font-size: 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 10px;
-}
-
-.home-banner p {
-    color: #666;
-    font-size: 14px;
-}
-
-.function-buttons {
+body.home-page .home-banner {
+    text-align: left;
+    margin-bottom: 28px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
+    gap: 10px;
 }
 
-.function-btn {
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    font-size: 18px;
+body.home-page .home-intro {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--home-chip);
+    color: var(--home-chip-text);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+body.home-page .home-banner h1 {
+    font-size: clamp(26px, 6vw, 34px);
+    font-family: "ZCOOL XiaoWei", serif;
+    color: var(--home-ink);
+    margin-bottom: 0;
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+
+body.home-page .home-banner p {
+    color: var(--home-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+body.home-page .function-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+body.home-page .function-btn {
+    padding: 18px 20px;
+    border-radius: 18px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
     text-decoration: none;
-    display: block;
-    text-align: center;
-}
-
-.function-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.user-info {
-    background: #f5f5f5;
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-}
-
-.user-info p {
-    margin: 8px 0;
-    color: #333;
-}
-
-.user-actions {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    border: 1px solid transparent;
+}
+
+body.home-page .function-btn::after {
+    content: "→";
+    font-size: 16px;
+}
+
+body.home-page .function-btn.primary {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    color: white;
+    box-shadow: 0 12px 26px rgba(230, 168, 164, 0.35);
+}
+
+body.home-page .function-btn.ghost {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--home-ink);
+    border: 1px solid var(--home-border);
+    box-shadow: 0 10px 20px rgba(74, 59, 57, 0.08);
+}
+
+body.home-page .function-btn:hover {
+    transform: translateY(-2px);
+}
+
+body.home-page .user-info {
+    background: rgba(255, 255, 255, 0.75);
+    padding: 18px;
+    border-radius: 18px;
+    margin-bottom: 18px;
+    border: 1px solid var(--home-border);
+    box-shadow: 0 10px 24px rgba(74, 59, 57, 0.08);
+}
+
+body.home-page .user-info p {
+    margin: 8px 0;
+    color: var(--home-ink);
+    font-size: 14px;
+}
+
+body.home-page .binding-code {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+body.home-page .binding-code-value {
+    font-size: 20px;
+    color: var(--home-accent);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+}
+
+body.home-page .binding-code-copy {
+    border: none;
+    background: var(--home-chip);
+    color: var(--home-ink);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+body.home-page .binding-code-copy:hover {
+    background: rgba(230, 168, 164, 0.28);
+}
+
+body.home-page .user-actions {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 10px;
 }
 
-.user-actions .btn {
-    flex: 1;
-    padding: 10px;
+body.home-page .btn {
+    width: 100%;
+    border-radius: 999px;
     font-size: 14px;
+    padding: 12px;
+}
+
+body.home-page .btn-primary {
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    box-shadow: 0 12px 26px rgba(230, 168, 164, 0.35);
+}
+
+body.home-page .btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--home-ink);
+    margin-top: 0;
+    border: 1px solid var(--home-line);
+}
+
+body.home-page .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.98);
+}
+
+body.home-page .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(74, 59, 57, 0.35);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body.home-page .modal-card {
+    width: min(360px, 92vw);
+    background: var(--home-card);
+    border: 1px solid var(--home-border);
+    border-radius: 24px;
+    padding: 22px 20px;
+    box-shadow: var(--home-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+body.home-page .modal-card::after {
+    content: "";
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    right: -80px;
+    top: -80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(230, 168, 164, 0.4), transparent);
+    opacity: 0.6;
+}
+
+body.home-page .modal-title {
+    margin: 0 0 6px;
+    font-family: "ZCOOL XiaoWei", serif;
+    font-size: 22px;
+    color: var(--home-ink);
+}
+
+body.home-page .modal-subtitle {
+    margin: 0 0 16px;
+    color: var(--home-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.home-page .modal-note {
+    margin: 0 0 16px;
+    color: var(--home-ink);
+    font-size: 13px;
+}
+
+body.home-page .modal-card .input-group input {
+    border: 1px solid var(--home-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body.home-page .modal-card .input-group input:focus {
+    border-color: var(--home-accent);
+    box-shadow: 0 0 0 3px rgba(230, 168, 164, 0.15);
+}
+
+body.home-page .modal-actions {
+    display: grid;
+    gap: 10px;
+}
+
+body.home-page .home-shape {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(6px);
+    opacity: 0.9;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body.home-page .home-shape-1 {
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 214, 208, 0.7);
+    top: 8%;
+    left: -80px;
+}
+
+body.home-page .home-shape-2 {
+    width: 180px;
+    height: 180px;
+    background: rgba(201, 191, 255, 0.55);
+    bottom: 10%;
+    right: -70px;
+}
+
+body.home-page .home-shape-3 {
+    width: 140px;
+    height: 140px;
+    background: rgba(255, 233, 214, 0.7);
+    top: 55%;
+    right: 18%;
+}
+
+@media (min-width: 640px) {
+    body.home-page .user-actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* 绑定动效 */
