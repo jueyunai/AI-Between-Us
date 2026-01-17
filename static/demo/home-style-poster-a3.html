@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A3 产品海报 - 情感陪伴助手</title>
+    <style>
+        @font-face {
+            font-family: "Noto Sans SC";
+            src: url("/static/fonts/NotoSansSC-Regular.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Noto Sans SC";
+            src: url("/static/fonts/NotoSansSC-Medium.woff2") format("woff2");
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "ZCOOL XiaoWei";
+            src: url("/static/fonts/ZCOOLXiaoWei-Regular.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --font-body: "Noto Sans SC", sans-serif;
+            --font-display: "ZCOOL XiaoWei", serif;
+            --bg: radial-gradient(1200px circle at 10% 10%, #fceeea 0%, #f7f3ff 35%, #fdf8f1 72%);
+            --text: #4a3b39;
+            --text-muted: #7a6c6c;
+            --accent: #e6a8a4;
+            --accent-2: #c7b2ff;
+            --card: rgba(255, 255, 255, 0.86);
+            --card-border: rgba(230, 168, 164, 0.25);
+            --line: rgba(74, 59, 57, 0.12);
+            --shadow: 0 24px 60px rgba(74, 59, 57, 0.14);
+            --chip-bg: rgba(230, 168, 164, 0.18);
+            --chip-text: #815d5b;
+            --btn-primary: linear-gradient(135deg, #e6a8a4, #c7b2ff);
+            --btn-ghost: rgba(74, 59, 57, 0.08);
+            --pattern: radial-gradient(circle at 1px 1px, rgba(230, 168, 164, 0.25) 1px, transparent 0);
+            --pattern-size: 30px 30px;
+            --pattern-opacity: 0.28;
+            --shape-1: rgba(255, 214, 208, 0.72);
+            --shape-2: rgba(201, 191, 255, 0.55);
+            --shape-3: rgba(255, 233, 214, 0.6);
+            --phone-bg: rgba(255, 255, 255, 0.7);
+        }
+
+        @page {
+            size: A3 portrait;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font-body);
+            color: var(--text);
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 24px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: var(--pattern);
+            background-size: var(--pattern-size);
+            opacity: var(--pattern-opacity);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page {
+            width: 297mm;
+            height: 420mm;
+            margin: 0 auto;
+            padding: 24mm 22mm 20mm;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14mm;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(74, 59, 57, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            font-size: 26px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 28px;
+            letter-spacing: 0.04em;
+        }
+
+        .brand-sub {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .poster-label {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.75);
+            font-size: 12px;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        main {
+            display: grid;
+            gap: 12mm;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 26px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            border-radius: 24px;
+            padding: 28px;
+            backdrop-filter: blur(16px);
+        }
+
+        .hero-card {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .hero-tag {
+            align-self: flex-start;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hero-card h1 {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: 42px;
+            line-height: 1.15;
+        }
+
+        .hero-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            font-size: 13px;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat strong {
+            font-family: var(--font-display);
+            font-size: 22px;
+        }
+
+        .stat span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: default;
+            font-weight: 600;
+        }
+
+        .btn.primary {
+            color: #fff;
+            background: var(--btn-primary);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn.ghost {
+            background: var(--btn-ghost);
+            color: var(--text);
+        }
+
+        .side-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .info-card .info-header {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px;
+        }
+
+        .info-line strong {
+            font-weight: 600;
+        }
+
+        .code-box {
+            margin: 14px 0 12px;
+            padding: 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px dashed var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .code-box .code {
+            font-family: var(--font-display);
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+        }
+
+        .info-foot {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .ritual-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ritual-card::after {
+            content: "";
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            right: -40px;
+            top: -40px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, var(--accent), transparent);
+            opacity: 0.4;
+        }
+
+        .ritual-title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .ritual-card p {
+            margin: 0 0 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .ritual-steps {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ritual-steps span {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            font-size: 12px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .feature {
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .feature p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .showcase {
+            display: grid;
+            gap: 18px;
+        }
+
+        .showcase-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .showcase-title {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: 26px;
+        }
+
+        .showcase-sub {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 420px;
+        }
+
+        .phone-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .phone {
+            background: var(--phone-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 18px 40px rgba(74, 59, 57, 0.12);
+        }
+
+        .phone-title {
+            font-size: 12px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .phone-frame {
+            background: #fff;
+            border-radius: 22px;
+            border: 1px solid var(--line);
+            padding: 14px 12px 12px;
+            min-height: 260px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .phone-frame::before {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 64px;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .phone-status {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 10px;
+            padding-top: 4px;
+        }
+
+        .phone-header {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .phone-sub {
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .mood-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .mood-chip {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            font-size: 10px;
+            color: var(--chip-text);
+        }
+
+        .mood-chip.active {
+            background: var(--btn-primary);
+            color: #fff;
+        }
+
+        .meter {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(74, 59, 57, 0.1);
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            width: var(--level, 70%);
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        }
+
+        .note-card {
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: rgba(230, 168, 164, 0.12);
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .mini-pill-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .mini-pill {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(74, 59, 57, 0.08);
+            font-size: 10px;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bubble {
+            max-width: 80%;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(74, 59, 57, 0.08);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .bubble.user {
+            align-self: flex-end;
+            background: rgba(230, 168, 164, 0.18);
+        }
+
+        .bubble.coach {
+            align-self: flex-start;
+        }
+
+        .input-bar {
+            margin-top: auto;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        .map-grid {
+            display: grid;
+            gap: 6px;
+        }
+
+        .map-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(74, 59, 57, 0.06);
+            font-size: 11px;
+        }
+
+        .map-item strong {
+            font-weight: 600;
+        }
+
+        .timeline {
+            margin-top: 6px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .timeline-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .ritual-mini {
+            padding: 10px;
+            border-radius: 14px;
+            background: rgba(201, 191, 255, 0.18);
+            display: grid;
+            gap: 6px;
+        }
+
+        .reminder-list {
+            display: grid;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .reminder-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(230, 168, 164, 0.12);
+            font-size: 11px;
+        }
+
+        .mini-btn {
+            margin-top: auto;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: none;
+            background: var(--btn-primary);
+            color: #fff;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .footer {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .bg-shape {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(10px);
+            opacity: 0.9;
+            z-index: 0;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .bg-shape.s1 {
+            width: 260px;
+            height: 260px;
+            background: var(--shape-1);
+            top: 8%;
+            left: -80px;
+        }
+
+        .bg-shape.s2 {
+            width: 220px;
+            height: 220px;
+            background: var(--shape-2);
+            bottom: 10%;
+            right: -60px;
+            animation-duration: 14s;
+        }
+
+        .bg-shape.s3 {
+            width: 160px;
+            height: 160px;
+            background: var(--shape-3);
+            top: 45%;
+            right: 20%;
+            animation-duration: 16s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-16px); }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                border-radius: 0;
+                background: transparent;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .page {
+                width: 100%;
+                height: auto;
+                border-radius: 0;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .phone-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-badge">💝</div>
+                <div>
+                    <div class="brand-title">情感陪伴助手</div>
+                    <div class="brand-sub">在亲密关系里，温柔地站在你这边</div>
+                </div>
+            </div>
+            <div class="poster-label">A3 产品海报 · 温柔疗愈</div>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="card hero-card">
+                    <span class="hero-tag">产品宣言</span>
+                    <h1>把情绪安放，把关系照亮</h1>
+                    <p>用共情对话、情绪地图与仪式提醒，构建安全的表达空间。每一次被倾听的时刻，都在累积你们的信任感。</p>
+                    <div class="chip-row">
+                        <span class="chip">共情对话教练</span>
+                        <span class="chip">情绪地图拆解</span>
+                        <span class="chip">关系修复指引</span>
+                        <span class="chip">温柔提醒陪伴</span>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat">
+                            <strong>86%</strong>
+                            <span>情绪稳定指数</span>
+                        </div>
+                        <div class="stat">
+                            <strong>4.2</strong>
+                            <span>周均共情对话</span>
+                        </div>
+                        <div class="stat">
+                            <strong>28</strong>
+                            <span>共同记忆条目</span>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="btn primary">温柔对话入口</button>
+                        <button class="btn ghost">今日小仪式</button>
+                    </div>
+                </div>
+                <div class="side-stack">
+                    <div class="card info-card">
+                        <div class="info-header">体验概览</div>
+                        <div class="info-line">
+                            <span>本周温柔提醒</span>
+                            <strong>12 次</strong>
+                        </div>
+                        <div class="info-line">
+                            <span>情绪修复建议</span>
+                            <strong>9 条</strong>
+                        </div>
+                        <div class="info-line">
+                            <span>共情练习完成</span>
+                            <strong>6 组</strong>
+                        </div>
+                        <div class="code-box">
+                            <span>今日陪伴指数</span>
+                            <span class="code">92</span>
+                        </div>
+                        <div class="info-foot">以上为模拟数据，用于展示版式。</div>
+                    </div>
+                    <div class="card ritual-card">
+                        <div class="ritual-title">今日小仪式</div>
+                        <p>对彼此说一句“我看见你今天的努力了”。仪式感不是形式，是把爱说出口。</p>
+                        <div class="ritual-steps">
+                            <span>1 分钟</span>
+                            <span>2 人</span>
+                            <span>1 句</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="feature-grid">
+                <div class="feature">
+                    <h3>共情对话教练</h3>
+                    <p>用温柔提问帮你把情绪说清楚，避免误解升级。</p>
+                </div>
+                <div class="feature">
+                    <h3>情绪地图</h3>
+                    <p>把复杂心情拆成可理解维度，让表达更准确。</p>
+                </div>
+                <div class="feature">
+                    <h3>关系记录</h3>
+                    <p>保存那些被理解的瞬间，形成可回顾的安全感。</p>
+                </div>
+            </section>
+
+            <section class="showcase">
+                <div class="showcase-header">
+                    <div>
+                        <h2 class="showcase-title">手机端产品展示</h2>
+                        <p class="showcase-sub">4 个核心页面覆盖日常情绪管理、关系沟通和仪式提醒，均为模拟内容。</p>
+                    </div>
+                    <span class="hero-tag">移动端截图</span>
+                </div>
+                <div class="phone-grid">
+                    <div class="phone">
+                        <div class="phone-title">01 情绪签到</div>
+                        <div class="phone-frame">
+                            <div class="phone-status">
+                                <span>09:30</span>
+                                <span>陪伴指数 86</span>
+                            </div>
+                            <div class="phone-header">今日心情</div>
+                            <div class="phone-sub">你现在的心情更像哪种天气？</div>
+                            <div class="mood-chips">
+                                <span class="mood-chip active">晴朗</span>
+                                <span class="mood-chip">多云</span>
+                                <span class="mood-chip">小雨</span>
+                                <span class="mood-chip">微风</span>
+                            </div>
+                            <div class="meter">
+                                <div class="meter-fill" style="--level: 70%;"></div>
+                            </div>
+                            <div class="note-card">“我需要被理解，而不是被评判。”</div>
+                            <div class="mini-pill-row">
+                                <span class="mini-pill">呼吸 3 分钟</span>
+                                <span class="mini-pill">自我肯定</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phone">
+                        <div class="phone-title">02 对话教练</div>
+                        <div class="phone-frame">
+                            <div class="phone-status">
+                                <span>21:05</span>
+                                <span>共情对话</span>
+                            </div>
+                            <div class="chat">
+                                <div class="bubble user">我总觉得他不理解我。</div>
+                                <div class="bubble coach">可以描述一个具体场景吗？</div>
+                                <div class="bubble user">昨晚他说我太敏感。</div>
+                                <div class="bubble coach">试试用“我感到…”来表达需求。</div>
+                            </div>
+                            <div class="input-bar">给教练一句话…</div>
+                        </div>
+                    </div>
+                    <div class="phone">
+                        <div class="phone-title">03 关系地图</div>
+                        <div class="phone-frame">
+                            <div class="phone-status">
+                                <span>本周概览</span>
+                                <span>更新至 4/10</span>
+                            </div>
+                            <div class="map-grid">
+                                <div class="map-item">
+                                    <span>安全感评分</span>
+                                    <strong>8.6</strong>
+                                </div>
+                                <div class="map-item">
+                                    <span>被理解时刻</span>
+                                    <strong>12</strong>
+                                </div>
+                                <div class="map-item">
+                                    <span>情绪修复</span>
+                                    <strong>5 次</strong>
+                                </div>
+                            </div>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <span class="timeline-dot"></span>
+                                    <span>4/10 · 成功表达“我需要被听见”</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-dot"></span>
+                                    <span>4/08 · 共同完成晚间复盘</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phone">
+                        <div class="phone-title">04 仪式提醒</div>
+                        <div class="phone-frame">
+                            <div class="phone-status">
+                                <span>今晚 21:30</span>
+                                <span>仪式感</span>
+                            </div>
+                            <div class="ritual-mini">
+                                <div class="phone-header">今日小仪式</div>
+                                <div class="phone-sub">对彼此说一句“我看见你今天的努力了”。</div>
+                                <div class="mini-pill-row">
+                                    <span class="mini-pill">1 分钟</span>
+                                    <span class="mini-pill">2 人</span>
+                                    <span class="mini-pill">1 句</span>
+                                </div>
+                            </div>
+                            <div class="reminder-list">
+                                <div class="reminder-item">
+                                    <span>周三</span>
+                                    <strong>睡前拥抱</strong>
+                                </div>
+                                <div class="reminder-item">
+                                    <span>周五</span>
+                                    <strong>一次散步</strong>
+                                </div>
+                            </div>
+                            <div class="mini-btn">设置提醒</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">示例数据为模拟内容，适用于 A3 海报打印排版。</footer>
+    </div>
+
+    <div class="bg-shape s1" aria-hidden="true"></div>
+    <div class="bg-shape s2" aria-hidden="true"></div>
+    <div class="bg-shape s3" aria-hidden="true"></div>
+</body>
+</html>

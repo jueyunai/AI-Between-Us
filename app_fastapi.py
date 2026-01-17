@@ -174,6 +174,10 @@ async def index(request: Request):
 async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request):
+    return templates.TemplateResponse("profile.html", {"request": request})
+
 @app.get("/coach", response_class=HTMLResponse)
 async def coach(request: Request):
     return templates.TemplateResponse("coach.html", {"request": request})
@@ -294,6 +298,34 @@ async def unbind_partner(user: User = Depends(get_current_user), db: Session = D
     db.commit()
 
     return {"success": True, "message": "已发起解绑，1个月冷静期后生效", "unbind_at": unbind_time.isoformat()}
+
+@app.post("/api/binding/cancel_unbind")
+async def cancel_unbind(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not user:
+        raise HTTPException(status_code=401, detail="未登录")
+
+    if not user.unbind_at:
+        raise HTTPException(status_code=400, detail="没有待撤销的解绑")
+
+    cool_down_end = user.unbind_at + timedelta(days=30)
+    if datetime.now() > cool_down_end:
+        raise HTTPException(status_code=400, detail="冷静期已过，无法撤销")
+
+    partner = db.query(User).filter(User.id == user.partner_id).first()
+    user.unbind_at = None
+    if partner:
+        partner.unbind_at = None
+
+    relationship = db.query(Relationship).filter(
+        ((Relationship.user1_id == user.id) & (Relationship.user2_id == user.partner_id)) |
+        ((Relationship.user1_id == user.partner_id) & (Relationship.user2_id == user.id))
+    ).first()
+    if relationship:
+        relationship.is_active = True
+
+    db.commit()
+
+    return {"success": True, "message": "已撤销解绑"}
 
 # ==================== 个人教练聊天室 API ====================
 @app.post("/api/coach/chat")

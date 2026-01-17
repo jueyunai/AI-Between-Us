@@ -4,10 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>首页风格预览 - 情感陪伴助手</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: "Noto Sans SC";
+            src: url("/static/fonts/NotoSansSC-Regular.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Noto Sans SC";
+            src: url("/static/fonts/NotoSansSC-Medium.woff2") format("woff2");
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "ZCOOL XiaoWei";
+            src: url("/static/fonts/ZCOOLXiaoWei-Regular.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
         :root {
             --font-body: "Noto Sans SC", sans-serif;
             --font-display: "ZCOOL XiaoWei", serif;
@@ -449,6 +469,161 @@
             line-height: 1.6;
         }
 
+        .ritual-demo {
+            margin-top: 30px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .ritual-header h2 {
+            margin: 0 0 8px;
+            font-family: var(--font-display);
+            font-size: 20px;
+        }
+
+        .ritual-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .ritual-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .ritual-demo-card {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 260px;
+        }
+
+        .ritual-demo-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .ritual-demo-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .ritual-stage {
+            position: relative;
+            height: 150px;
+            border-radius: 18px;
+            border: 1px dashed var(--line);
+            background: rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+        }
+
+        .ritual-center {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            font-size: 22px;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.15);
+            z-index: 1;
+        }
+
+        .ritual-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            animation: drift-out var(--dur, 2s) ease-out forwards;
+            opacity: 0;
+        }
+
+        .particle.emoji {
+            font-size: 16px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+        }
+
+        .particle.star {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            box-shadow: 0 0 10px rgba(199, 178, 255, 0.8);
+        }
+
+        .particle.dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(230, 168, 164, 0.6);
+        }
+
+        .glow-ring {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 1px solid rgba(230, 168, 164, 0.6);
+            box-shadow: 0 0 40px rgba(230, 168, 164, 0.45);
+            transform: translate(-50%, -50%) scale(0.6);
+            animation: glow 1.6s ease-out forwards;
+        }
+
+        .ritual-center.pulse {
+            animation: ritual-pulse 0.9s ease;
+        }
+
+        @keyframes drift-out {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(var(--scale, 1));
+                opacity: 0;
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(0.6);
+            }
+            60% {
+                opacity: 0.9;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+        }
+
+        @keyframes ritual-pulse {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
         .footer {
             margin-top: 30px;
             color: var(--text-muted);
@@ -506,6 +681,10 @@
             }
 
             .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ritual-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -609,6 +788,42 @@
                     <p>轻量而温柔的提醒，像在耳边轻声说“我在”。</p>
                 </div>
             </section>
+
+            <section class="ritual-demo">
+                <div class="ritual-header">
+                    <h2>绑定仪式感动效示例</h2>
+                    <p>点击按钮预览 A/B/C 三种交互动效，感受不同的惊喜氛围。</p>
+                </div>
+                <div class="ritual-grid">
+                    <div class="card ritual-demo-card">
+                        <h3 class="ritual-demo-title">A · 温柔礼花（爱心 / 花瓣粒子）</h3>
+                        <p class="ritual-demo-desc">柔和的心形与花瓣从中心轻柔绽放，适合温柔疗愈的惊喜时刻。</p>
+                        <div class="ritual-stage" data-stage="a">
+                            <div class="ritual-center">💗</div>
+                            <div class="ritual-layer"></div>
+                        </div>
+                        <button class="btn primary ritual-trigger" data-effect="a">触发 A</button>
+                    </div>
+                    <div class="card ritual-demo-card">
+                        <h3 class="ritual-demo-title">B · 光晕 + 星尘</h3>
+                        <p class="ritual-demo-desc">一道柔光扩散，星尘慢慢升起，适合“被认真对待”的仪式感。</p>
+                        <div class="ritual-stage" data-stage="b">
+                            <div class="ritual-center">✨</div>
+                            <div class="ritual-layer"></div>
+                        </div>
+                        <button class="btn primary ritual-trigger" data-effect="b">触发 B</button>
+                    </div>
+                    <div class="card ritual-demo-card">
+                        <h3 class="ritual-demo-title">C · 心形礼花</h3>
+                        <p class="ritual-demo-desc">心形轨迹的烟花点阵缓慢展开，仪式感最强，适合绑定成功的高潮瞬间。</p>
+                        <div class="ritual-stage" data-stage="c">
+                            <div class="ritual-center">🎉</div>
+                            <div class="ritual-layer"></div>
+                        </div>
+                        <button class="btn primary ritual-trigger" data-effect="c">触发 C</button>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer class="footer">这是首页视觉风格预览页面，用于对比四种气质方向。</footer>
@@ -640,6 +855,109 @@
         if (savedTheme) {
             setTheme(savedTheme);
         }
+
+        const ritualButtons = document.querySelectorAll(".ritual-trigger");
+
+        function rand(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function clearLayer(layer) {
+            layer.innerHTML = "";
+        }
+
+        function pulseCenter(stage) {
+            const center = stage.querySelector(".ritual-center");
+            if (!center) return;
+            center.classList.remove("pulse");
+            void center.offsetWidth;
+            center.classList.add("pulse");
+        }
+
+        function spawnEmoji(layer, text, x, y, scale, dur) {
+            const particle = document.createElement("span");
+            particle.className = "particle emoji";
+            particle.textContent = text;
+            particle.style.setProperty("--x", `${x}px`);
+            particle.style.setProperty("--y", `${y}px`);
+            particle.style.setProperty("--scale", scale.toFixed(2));
+            particle.style.setProperty("--dur", `${dur}s`);
+            layer.appendChild(particle);
+        }
+
+        function spawnDot(layer, x, y, scale, dur, type) {
+            const particle = document.createElement("span");
+            particle.className = `particle ${type}`;
+            particle.style.setProperty("--x", `${x}px`);
+            particle.style.setProperty("--y", `${y}px`);
+            particle.style.setProperty("--scale", scale.toFixed(2));
+            particle.style.setProperty("--dur", `${dur}s`);
+            layer.appendChild(particle);
+        }
+
+        function effectA(stage, layer) {
+            const icons = ["💗", "🌸", "✨", "💞"];
+            const count = 26;
+            for (let i = 0; i < count; i += 1) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = rand(40, 120);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                const scale = rand(0.8, 1.3);
+                const dur = rand(1.8, 2.6);
+                const icon = icons[Math.floor(Math.random() * icons.length)];
+                spawnEmoji(layer, icon, x, y, scale, dur);
+            }
+            setTimeout(() => clearLayer(layer), 2600);
+        }
+
+        function effectB(stage, layer) {
+            const ring = document.createElement("div");
+            ring.className = "glow-ring";
+            layer.appendChild(ring);
+            const count = 22;
+            for (let i = 0; i < count; i += 1) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = rand(30, 110);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                const scale = rand(0.6, 1.2);
+                const dur = rand(1.6, 2.2);
+                spawnDot(layer, x, y, scale, dur, "star");
+            }
+            setTimeout(() => clearLayer(layer), 2200);
+        }
+
+        function effectC(stage, layer) {
+            const count = 36;
+            for (let i = 0; i <= count; i += 1) {
+                const t = (i / count) * Math.PI * 2;
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                const scale = rand(0.8, 1.1);
+                const dur = rand(1.8, 2.4);
+                spawnDot(layer, x * 4.2, -y * 4.2, scale, dur, "dot");
+            }
+            setTimeout(() => clearLayer(layer), 2400);
+        }
+
+        ritualButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const effect = btn.dataset.effect;
+                const stage = document.querySelector(`[data-stage="${effect}"]`);
+                const layer = stage ? stage.querySelector(".ritual-layer") : null;
+                if (!stage || !layer) return;
+                clearLayer(layer);
+                pulseCenter(stage);
+                if (effect === "a") {
+                    effectA(stage, layer);
+                } else if (effect === "b") {
+                    effectB(stage, layer);
+                } else if (effect === "c") {
+                    effectC(stage, layer);
+                }
+            });
+        });
     </script>
 </body>
 </html>
