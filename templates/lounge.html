@@ -141,6 +141,8 @@
     <div class="gentle-shape gentle-shape-2" aria-hidden="true"></div>
     <div class="gentle-shape gentle-shape-3" aria-hidden="true"></div>
 
+    <!-- 引入 Socket.IO 客户端库 -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         let socket = null;
         let roomId = null;
@@ -190,8 +192,8 @@
             // 加载历史记录
             await loadHistory();
 
-            // 连接 WebSocket
-            connectWebSocket();
+            // 连接 Socket.IO
+            connectSocket();
         }
 
         async function loadHistory() {
@@ -208,38 +210,74 @@
             }
         }
 
-        function connectWebSocket() {
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${wsProtocol}//${window.location.host}/ws/lounge/${roomId}`;
+        function connectSocket() {
+            // 使用 Socket.IO 连接
+            socket = io();
 
-            socket = new WebSocket(wsUrl);
+            socket.on('connect', () => {
+                console.log('Socket.IO 已连接');
+                // 加入房间
+                socket.emit('join_lounge', {
+                    room_id: roomId,
+                    user_id: userId
+                });
+            });
 
-            socket.onopen = () => {
-                console.log('WebSocket 已连接');
-            };
-
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.event === 'new_message') {
-                    messages.push(data.message);
-                    renderMessages();
+            socket.on('new_message', (data) => {
+                // 如果收到正式的 AI 消息，移除流式占位消息
+                if (data.role === 'assistant' && streamingMsgId) {
+                    messages = messages.filter(m => m.id !== streamingMsgId);
+                    streamingMsgId = null;
                 }
-            };
+                messages.push(data);
+                renderMessages();
 
-            socket.onclose = () => {
-                console.log('WebSocket 已断开');
-            };
+                // 如果这是用户发送的带 @教练 的消息，触发 AI 响应
+                if (data.role === 'user' && data.user_id === userId && pendingAICall) {
+                    pendingAICall = false;
+                    callAI();
+                }
+            });
 
-            socket.onerror = (error) => {
-                console.error('WebSocket 错误:', error);
-            };
+            // 监听 AI 流式输出
+            socket.on('ai_stream', (data) => {
+                // 更新流式消息内容
+                const streamingMsg = messages.find(m => m.id === streamingMsgId);
+                if (streamingMsg) {
+                    if (data.type === 'delta') {
+                        // 增量更新
+                        if (streamingMsg.content === '🎯 情感教练正在分析...') {
+                            streamingMsg.content = data.content;
+                        } else {
+                            streamingMsg.content += data.content;
+                        }
+                        // 直接更新 DOM，不重建整个列表
+                        updateStreamingMessage(streamingMsg.content);
+                    } else if (data.type === 'done') {
+                        // 流式结束
+                        streamingMsg.isStreaming = false;
+                    }
+                }
+            });
+
+            socket.on('user_joined', (data) => {
+                console.log('用户加入:', data.user_id);
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Socket.IO 已断开');
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Socket.IO 连接错误:', error);
+            });
         }
 
         function renderMessages() {
             const container = document.getElementById('chatMessages');
             container.innerHTML = '';
 
-            messages.forEach(msg => {
+            messages.forEach((msg, index) => {
                 const messageDiv = document.createElement('div');
 
                 if (msg.role === 'assistant') {
@@ -254,6 +292,11 @@
                 contentDiv.className = 'message-content';
                 contentDiv.textContent = msg.content;
 
+                // 为流式消息添加特殊 ID
+                if (msg.isStreaming) {
+                    contentDiv.id = 'streaming-content';
+                }
+
                 messageDiv.appendChild(contentDiv);
                 container.appendChild(messageDiv);
             });
@@ -262,52 +305,66 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // 直接更新流式消息的 DOM，避免重建整个列表
+        function updateStreamingMessage(content) {
+            const streamingEl = document.getElementById('streaming-content');
+            if (streamingEl) {
+                streamingEl.textContent = content;
+                // 滚动到底部
+                const container = document.getElementById('chatMessages');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        // 用于跟踪流式 AI 消息的临时 ID
+        let streamingMsgId = null;
+        // 用于标记是否需要在用户消息回调后触发 AI
+        let pendingAICall = false;
+
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const content = input.value.trim();
 
             if (!content) return;
 
-            // 检查是否召唤 AI
-            if (content.includes('@AI')) {
-                callAI();
-                input.value = '';
-                return;
+            // 检查是否召唤 AI（支持 @AI 和 @教练）
+            const isCallingAI = content.includes('@AI') || content.includes('@教练');
+
+            // 标记需要在用户消息回调后触发 AI
+            if (isCallingAI) {
+                pendingAICall = true;
             }
 
-            // 发送消息
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    event: 'send_message',
+            // 发送用户消息（保留完整内容，包括 @教练）
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    room_id: roomId,
                     user_id: userId,
                     content: content
-                }));
+                });
             }
 
             input.value = '';
         }
 
         function callAI() {
-            // 显示 AI 正在响应
-            const loadingMsg = {
+            // 创建流式消息占位
+            streamingMsgId = 'ai_streaming_' + Date.now();
+            const streamingMsg = {
+                id: streamingMsgId,
                 role: 'assistant',
-                content: '🤖 AI助手正在分析你们的对话...'
+                content: '🎯 情感教练正在分析...',
+                isStreaming: true
             };
-            messages.push(loadingMsg);
+            messages.push(streamingMsg);
             renderMessages();
 
             // 召唤 AI
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    event: 'call_ai'
-                }));
+            if (socket && socket.connected) {
+                socket.emit('call_ai', {
+                    room_id: roomId
+                });
             }
-
-            // 移除加载消息（实际消息会通过 WebSocket 接收）
-            setTimeout(() => {
-                messages = messages.filter(m => m.content !== loadingMsg.content);
-                renderMessages();
-            }, 500);
         }
 
         function handleEnter(event) {

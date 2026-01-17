@@ -758,6 +758,7 @@ body.home-page .entry-card {
     color: var(--home-ink);
     transform-style: preserve-3d;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    overflow: hidden;
 }
 
 body.home-page .entry-card::before {
