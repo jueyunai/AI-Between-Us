@@ -2,7 +2,7 @@
 from flask import Flask, request, jsonify, render_template, session, Response, stream_with_context
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from models import db, User, Relationship, CoachChat, LoungeChat
+from storage import User, Relationship, CoachChat, LoungeChat
 from datetime import datetime, timedelta
 import secrets
 import os
@@ -15,11 +15,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///emotion_helper.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 app.config['JSON_AS_ASCII'] = False  # 支持中文 JSON 响应
 
-db.init_app(app)
+
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -191,8 +190,11 @@ def call_coze_api(user_phone, message, bot_id, conversation_history=None):
                     break
                 final_content = new_content
             
-            # 移除多余的空白字符
-            final_content = re.sub(r'\s+', ' ', final_content).strip()
+            # 移除多余的空白字符，但保留换行符
+            final_content = re.sub(r'[ ]+', ' ', final_content).strip()
+            
+            # 移除行首和行尾的空格
+            final_content = '\n'.join(line.strip() for line in final_content.split('\n'))
             
             # 智能去重：检测并移除重复的句子或段落
             # 如果内容重复（前一半等于后一半），只保留一半
@@ -241,14 +243,6 @@ def call_coze_api(user_phone, message, bot_id, conversation_history=None):
         print(f"[Coze API] 处理异常: {str(e)}", flush=True)
         return f"AI 处理异常: {str(e)}"
 
-# ==================== 数据库初始化 ====================
-@app.before_request
-def create_tables():
-    if not hasattr(app, 'tables_created'):
-        db.create_all()
-        app.tables_created = True
-
-
 # ==================== 用户认证 API ====================
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -261,15 +255,14 @@ def register():
         return jsonify({'success': False, 'message': '手机号和密码不能为空'}), 400
 
     # 检查用户是否已存在
-    existing_user = User.query.filter_by(phone=phone).first()
-    if existing_user:
+    existing_users = User.filter(phone=phone)
+    if existing_users:
         return jsonify({'success': False, 'message': '该手机号已注册'}), 400
 
     # 创建新用户
     user = User(phone=phone, password=password)
     user.generate_binding_code()
-    db.session.add(user)
-    db.session.commit()
+    user.save()
 
     return jsonify({
         'success': True,
@@ -285,7 +278,8 @@ def login():
     phone = data.get('phone')
     password = data.get('password')
 
-    user = User.query.filter_by(phone=phone, password=password).first()
+    users = User.filter(phone=phone, password=password)
+    user = users[0] if users else None
     if not user:
         return jsonify({'success': False, 'message': '手机号或密码错误'}), 401
 
@@ -313,7 +307,7 @@ def get_user_info():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     if not user:
         return jsonify({'success': False, 'message': '用户不存在'}), 404
 
@@ -331,10 +325,10 @@ def get_binding_code():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     if not user.binding_code:
         user.generate_binding_code()
-        db.session.commit()
+        user.save()
 
     return jsonify({
         'success': True,
@@ -352,8 +346,9 @@ def bind_partner():
     data = request.json
     binding_code = data.get('binding_code')
 
-    user = User.query.get(user_id)
-    partner = User.query.filter_by(binding_code=binding_code).first()
+    user = User.get(user_id)
+    partners = User.filter(binding_code=binding_code)
+    partner = partners[0] if partners else None
 
     if not partner:
         return jsonify({'success': False, 'message': '绑定码无效'}), 400
@@ -375,8 +370,9 @@ def bind_partner():
         user2_id=max(user.id, partner.id),
         room_id=room_id
     )
-    db.session.add(relationship)
-    db.session.commit()
+    relationship.save()
+    user.save()
+    partner.save()
 
     return jsonify({
         'success': True,
@@ -392,11 +388,11 @@ def unbind_partner():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     if not user.partner_id:
         return jsonify({'success': False, 'message': '您还没有绑定伴侣'}), 400
 
-    partner = User.query.get(user.partner_id)
+    partner = User.get(user.partner_id)
 
     # 设置解绑时间（1个月冷静期）
     unbind_time = datetime.now()
@@ -404,14 +400,17 @@ def unbind_partner():
     partner.unbind_at = unbind_time
 
     # 停用关系
-    relationship = Relationship.query.filter(
-        ((Relationship.user1_id == user.id) & (Relationship.user2_id == partner.id)) |
-        ((Relationship.user1_id == partner.id) & (Relationship.user2_id == user.id))
-    ).first()
-    if relationship:
+    relationships = Relationship.filter(
+        user1_id=min(user.id, partner.id),
+        user2_id=max(user.id, partner.id)
+    )
+    if relationships:
+        relationship = relationships[0]
         relationship.is_active = False
+        relationship.save()
 
-    db.session.commit()
+    user.save()
+    partner.save()
 
     return jsonify({
         'success': True,
@@ -427,28 +426,33 @@ def cancel_unbind():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     if not user.unbind_at:
         return jsonify({'success': False, 'message': '没有待撤销的解绑'}), 400
 
     # 检查是否在冷静期内
+    if isinstance(user.unbind_at, str):
+        user.unbind_at = datetime.fromisoformat(user.unbind_at)
     cool_down_end = user.unbind_at + timedelta(days=30)
     if datetime.now() > cool_down_end:
         return jsonify({'success': False, 'message': '冷静期已过，无法撤销'}), 400
 
-    partner = User.query.get(user.partner_id)
+    partner = User.get(user.partner_id)
     user.unbind_at = None
     partner.unbind_at = None
 
     # 恢复关系
-    relationship = Relationship.query.filter(
-        ((Relationship.user1_id == user.id) & (Relationship.user2_id == partner.id)) |
-        ((Relationship.user1_id == partner.id) & (Relationship.user2_id == user.id))
-    ).first()
-    if relationship:
+    relationships = Relationship.filter(
+        user1_id=min(user.id, partner.id),
+        user2_id=max(user.id, partner.id)
+    )
+    if relationships:
+        relationship = relationships[0]
         relationship.is_active = True
+        relationship.save()
 
-    db.session.commit()
+    user.save()
+    partner.save()
 
     return jsonify({
         'success': True,
@@ -471,15 +475,17 @@ def coach_chat():
         return jsonify({'success': False, 'message': '消息不能为空'}), 400
 
     # 获取用户信息
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     user_phone = user.phone
 
     # 保存用户消息
     user_msg = CoachChat(user_id=user_id, role='user', content=message)
-    db.session.add(user_msg)
+    user_msg.save()
 
     # 获取历史对话（最近5条，避免消息过长）
-    history = CoachChat.query.filter_by(user_id=user_id).order_by(CoachChat.created_at.desc()).limit(5).all()
+    all_history = CoachChat.filter(user_id=user_id)
+    all_history.sort(key=lambda x: x.created_at, reverse=True)
+    history = all_history[:5]
     conversation_history = [{"role": msg.role, "content": msg.content} for msg in reversed(history)]
 
     # 调用 Coze API
@@ -492,8 +498,7 @@ def coach_chat():
 
     # 保存 AI 回复
     ai_msg = CoachChat(user_id=user_id, role='assistant', content=ai_reply)
-    db.session.add(ai_msg)
-    db.session.commit()
+    ai_msg.save()
 
     return jsonify({
         'success': True,
@@ -508,7 +513,8 @@ def get_coach_history():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    history = CoachChat.query.filter_by(user_id=user_id).order_by(CoachChat.created_at).all()
+    history = CoachChat.filter(user_id=user_id)
+    history.sort(key=lambda x: x.created_at)
 
     return jsonify({
         'success': True,
@@ -530,16 +536,17 @@ def coach_chat_stream():
         return jsonify({'success': False, 'message': '消息不能为空'}), 400
 
     # 获取用户信息
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     user_phone = user.phone
 
     # 保存用户消息
     user_msg = CoachChat(user_id=user_id, role='user', content=message)
-    db.session.add(user_msg)
-    db.session.commit()
+    user_msg.save()
 
     # 获取历史对话（最近5条）
-    history = CoachChat.query.filter_by(user_id=user_id).order_by(CoachChat.created_at.desc()).limit(5).all()
+    all_history = CoachChat.filter(user_id=user_id)
+    all_history.sort(key=lambda x: x.created_at, reverse=True)
+    history = all_history[:5]
     conversation_history = [{"role": msg.role, "content": msg.content} for msg in reversed(history)]
 
     def generate():
@@ -649,17 +656,15 @@ def coach_chat_stream():
                         print(f"[Stream Error] {e}", flush=True)
                         continue
 
-            # 保存 AI 回复到数据库（包含思考过程）
+            # 保存 AI 回复到存储（包含思考过程）
             if final_content:
-                with app.app_context():
-                    ai_msg = CoachChat(
-                        user_id=user_id, 
-                        role='assistant', 
-                        content=final_content,
-                        reasoning_content=reasoning_content if reasoning_content else None
-                    )
-                    db.session.add(ai_msg)
-                    db.session.commit()
+                ai_msg = CoachChat(
+                    user_id=user_id, 
+                    role='assistant', 
+                    content=final_content,
+                    reasoning_content=reasoning_content if reasoning_content else None
+                )
+                ai_msg.save()
 
             # 发送完成信号
             yield f"data: {json.dumps({'type': 'done', 'final_content': final_content, 'reasoning_content': reasoning_content}, ensure_ascii=False)}\n\n"
@@ -687,14 +692,15 @@ def get_lounge_room():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     if not user.partner_id:
         return jsonify({'success': False, 'message': '您还没有绑定伴侣'}), 400
 
-    relationship = Relationship.query.filter(
+    relationships = Relationship.filter(
         ((Relationship.user1_id == user.id) | (Relationship.user2_id == user.id)) &
         (Relationship.is_active == True)
-    ).first()
+    )
+    relationship = relationships[0] if relationships else None
 
     if not relationship:
         return jsonify({'success': False, 'message': '未找到有效的关系'}), 404
@@ -712,15 +718,17 @@ def get_lounge_history():
     if not user_id:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
-    user = User.query.get(user_id)
-    relationship = Relationship.query.filter(
+    user = User.get(user_id)
+    relationships = Relationship.filter(
         ((Relationship.user1_id == user.id) | (Relationship.user2_id == user.id))
-    ).first()
+    )
+    relationship = relationships[0] if relationships else None
 
     if not relationship:
         return jsonify({'success': False, 'message': '未找到房间'}), 404
 
-    history = LoungeChat.query.filter_by(room_id=relationship.room_id).order_by(LoungeChat.created_at).all()
+    history = LoungeChat.filter(room_id=relationship.room_id)
+    history.sort(key=lambda x: x.created_at)
 
     return jsonify({
         'success': True,
@@ -748,11 +756,45 @@ def handle_send_message(data):
 
     # 保存消息
     msg = LoungeChat(room_id=room_id, user_id=user_id, role='user', content=content)
-    db.session.add(msg)
-    db.session.commit()
+    msg.save()
 
     # 广播消息
     emit('new_message', msg.to_dict(), room=room_id)
+
+    # 检测是否@了AI
+    if '@AI' in content or '@ai' in content:
+        # 获取最近的对话记录（最近10条）
+        all_history = LoungeChat.filter(room_id=room_id)
+        all_history.sort(key=lambda x: x.created_at, reverse=True)
+        history = all_history[:10]
+
+        # 构建对话历史（排除 AI 的回复，只保留用户对话）
+        conversation_history = []
+        latest_message = ""
+        for msg in reversed(history):
+            if msg.role == "user":
+                # 构建完整的对话内容供 AI 分析
+                latest_message += f"{msg.content}\n"
+                conversation_history.append({"role": "user", "content": msg.content})
+
+        # 如果没有对话记录，返回提示
+        if not latest_message.strip():
+            ai_reply = "暂时没有对话内容可供分析哦～"
+        else:
+            # 使用 room_id 作为 user_id，让 Coze 记住这个房间的对话
+            ai_reply = call_coze_api(
+                user_phone=room_id,  # 使用房间ID作为唯一标识
+                message="请基于以上对话内容，作为情感调解专家，提供建设性的沟通建议，帮助双方理解彼此：\n" + latest_message,
+                bot_id=COZE_BOT_ID_LOUNGE,
+                conversation_history=None  # 情感客厅不需要历史，每次都是新的分析
+            )
+
+        # 保存 AI 消息
+        ai_msg = LoungeChat(room_id=room_id, user_id=None, role='assistant', content=ai_reply)
+        ai_msg.save()
+
+        # 广播 AI 回复
+        emit('new_message', ai_msg.to_dict(), room=room_id)
 
 
 @socketio.on('call_ai')
@@ -761,7 +803,9 @@ def handle_call_ai(data):
     room_id = data.get('room_id')
 
     # 获取最近的对话记录（最近10条）
-    history = LoungeChat.query.filter_by(room_id=room_id).order_by(LoungeChat.created_at.desc()).limit(10).all()
+    all_history = LoungeChat.filter(room_id=room_id)
+    all_history.sort(key=lambda x: x.created_at, reverse=True)
+    history = all_history[:10]
 
     # 构建对话历史（排除 AI 的回复，只保留用户对话）
     conversation_history = []
@@ -786,8 +830,7 @@ def handle_call_ai(data):
 
     # 保存 AI 消息
     ai_msg = LoungeChat(room_id=room_id, user_id=None, role='assistant', content=ai_reply)
-    db.session.add(ai_msg)
-    db.session.commit()
+    ai_msg.save()
 
     # 广播 AI 回复
     emit('new_message', ai_msg.to_dict(), room=room_id)
@@ -824,4 +867,6 @@ def lounge():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5001)
+    import os
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    socketio.run(app, debug=debug_mode, host='0.0.0.0', port=7860, allow_unsafe_werkzeug=True)
