@@ -5,23 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>情感客厅 - Between Us</title>
     <link rel="stylesheet" href="/static/css/common.css">
+    <style>
+        /* 情侣标识独立栏 */
+        .couple-bar {
+            background: linear-gradient(135deg, rgba(230, 168, 164, 0.12), rgba(199, 178, 255, 0.16));
+            border-bottom: 1px solid var(--home-border);
+            padding: 12px 20px;
+        }
+
+        .couple-bar .couple-row {
+            margin-top: 0 !important;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        /* 输入区域包装器 */
+        .chat-input-wrapper {
+            background: rgba(255, 255, 255, 0.85);
+            border-top: 1px solid var(--home-border);
+            padding: 10px 16px 12px;
+        }
+
+        .chat-input-wrapper .chat-input {
+            border-top: none;
+            padding: 8px 0 0;
+            background: transparent;
+        }
+
+        /* 教练标签按钮 */
+        .coach-tag-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1.5px solid transparent;
+            background: linear-gradient(#fff, #fff) padding-box,
+                        linear-gradient(135deg, #e6a8a4, #c7b2ff) border-box;
+            color: var(--home-ink, #4a3b39);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(230, 168, 164, 0.2);
+        }
+
+        .coach-tag-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(230, 168, 164, 0.35);
+            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)) padding-box,
+                        linear-gradient(135deg, #e6a8a4, #c7b2ff) border-box;
+        }
+
+        .coach-tag-btn:active {
+            transform: scale(0.97);
+        }
+
+        .coach-tag-icon {
+            font-size: 14px;
+        }
+
+        /* 返回按钮优化 */
+        .chat-header .back-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--home-border);
+            color: var(--home-ink);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(74, 59, 57, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .chat-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(-2px);
+            box-shadow: 0 6px 16px rgba(74, 59, 57, 0.12);
+        }
+
+        .chat-header .back-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
 </head>
 <body class="lounge-page">
     <div class="container">
         <div class="chat-container">
             <div class="chat-header">
-                <button class="back-btn" onclick="window.location.href='/home'">← 返回</button>
+                <button class="back-btn" onclick="window.location.href='/home'" aria-label="返回">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 18l-6-6 6-6"/>
+                                    </svg>
+                                </button>
                 <h2>💑 情感客厅</h2>
-                <div class="ai-icon" ondblclick="callAI()" title="双击召唤AI助手">AI</div>
+                <div></div>
+            </div>
+
+            <div class="couple-bar">
+                <div class="couple-row" aria-label="情侣标识">
+                    <div class="couple-pill">
+                        <span class="couple-avatar">我</span>
+                        <span class="couple-name">小雨</span>
+                    </div>
+                    <span class="couple-heart" aria-hidden="true">💗</span>
+                    <div class="couple-pill">
+                        <span class="couple-avatar">Ta</span>
+                        <span class="couple-name">阿晨</span>
+                    </div>
+                </div>
             </div>
 
             <div class="chat-messages" id="chatMessages">
                 <!-- 消息列表 -->
             </div>
 
-            <div class="chat-input">
+            <div class="chat-input-wrapper">
+                <button class="coach-tag-btn" onclick="insertCoachTag()">
+                    <span class="coach-tag-icon">🎯</span>
+                    <span>教练你怎么看？</span>
+                </button>
+                <div class="chat-input">
                 <input type="text" id="messageInput" placeholder="一起聊聊你的想法..." onkeypress="handleEnter(event)">
                 <button class="send-btn" onclick="sendMessage()">发送</button>
+                </div>
             </div>
         </div>
     </div>
@@ -203,6 +314,12 @@
             if (event.key === 'Enter') {
                 sendMessage();
             }
+        }
+
+        function insertCoachTag() {
+            const input = document.getElementById('messageInput');
+            input.value = '@教练 ';
+            input.focus();
         }
 
         // 初始化
