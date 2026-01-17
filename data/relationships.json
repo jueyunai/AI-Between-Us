@@ -1,0 +1,21 @@
+{
+  "next_id": 3,
+  "data": [
+    {
+      "id": 1,
+      "user1_id": 3,
+      "user2_id": 4,
+      "room_id": "room_3_4",
+      "created_at": "2026-01-17T20:33:58.252047",
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "user1_id": 3,
+      "user2_id": 4,
+      "room_id": "room_3_4",
+      "created_at": "2026-01-17T22:07:29.424450",
+      "is_active": true
+    }
+  ]
+}

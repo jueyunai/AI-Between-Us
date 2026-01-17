@@ -49,6 +49,24 @@
     <div class="gentle-shape gentle-shape-3" aria-hidden="true"></div>
 
     <script>
+        // Toast 提示函数
+        function showToast(message, type = 'info', duration = 2500) {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
         function showRegister() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'block';
@@ -64,7 +82,7 @@
             const password = document.getElementById('loginPassword').value;
 
             if (!phone || !password) {
-                alert('请填写手机号和密码');
+                showToast('请填写手机号和密码', 'error');
                 return;
             }
 
@@ -80,15 +98,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('登录成功！');
                     localStorage.setItem('userId', data.user.id);
                     localStorage.setItem('userPhone', data.user.phone);
                     window.location.href = '/home';
                 } else {
-                    alert(data.message || '登录失败');
+                    showToast(data.message || '登录失败', 'error');
                 }
             } catch (error) {
-                alert('网络错误，请稍后再试');
+                showToast('网络错误，请稍后再试', 'error');
                 console.error(error);
             }
         }
@@ -98,7 +115,7 @@
             const password = document.getElementById('registerPassword').value;
 
             if (!phone || !password) {
-                alert('请填写手机号和密码');
+                showToast('请填写手机号和密码', 'error');
                 return;
             }
 
@@ -114,14 +131,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('注册成功！请登录');
+                    showToast('注册成功！请登录', 'success');
                     showLogin();
                     document.getElementById('loginPhone').value = phone;
                 } else {
-                    alert(data.message || '注册失败');
+                    showToast(data.message || '注册失败', 'error');
                 }
             } catch (error) {
-                alert('网络错误，请稍后再试');
+                showToast('网络错误，请稍后再试', 'error');
                 console.error(error);
             }
         }

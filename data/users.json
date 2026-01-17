@@ -1,5 +1,5 @@
 {
-  "next_id": 3,
+  "next_id": 6,
   "data": [
     {
       "id": 1,
@@ -18,6 +18,33 @@
       "unbind_at": null,
       "created_at": "2026-01-17T16:44:48.384240",
       "id": 2
+    },
+    {
+      "phone": "19928786380",
+      "password": "123",
+      "binding_code": "5D4B73",
+      "partner_id": 4,
+      "unbind_at": null,
+      "created_at": "2026-01-17T22:06:03.498260",
+      "id": 3
+    },
+    {
+      "phone": "007",
+      "password": "123",
+      "binding_code": "A786D0",
+      "partner_id": 3,
+      "unbind_at": null,
+      "created_at": "2026-01-17T22:06:31.709322",
+      "id": 4
+    },
+    {
+      "phone": "123",
+      "password": "123",
+      "binding_code": "6A1247",
+      "partner_id": null,
+      "unbind_at": null,
+      "created_at": "2026-01-17T22:54:54.940584",
+      "id": 5
     }
   ]
 }

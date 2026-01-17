@@ -329,7 +329,7 @@ class LoungeChat:
             'user_id': self.user_id,
             'role': self.role,
             'content': self.content,
-            'created_at': self.created_at
+            'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at
         }
     
     @staticmethod

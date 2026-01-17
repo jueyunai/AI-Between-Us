@@ -408,7 +408,10 @@
         .share-image-message.user {
             background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
             color: white;
-            margin-left: 40px;
+            margin-left: auto;
+            margin-right: 0;
+            width: fit-content;
+            max-width: calc(100% - 40px);
             border-bottom-right-radius: 4px;
         }
 
@@ -589,6 +592,24 @@
     </div>
 
     <script>
+        // Toast 提示函数
+        function showToast(message, type = 'info', duration = 2500) {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
         let messages = [];
         let isStreaming = false;
         let selectedMessages = new Set();
@@ -599,7 +620,7 @@
                 const response = await fetch('/api/coach/history');
 
                 if (response.status === 401) {
-                    alert('登录已过期，请重新登录');
+                    showToast('登录已过期，请重新登录', 'error');
                     window.location.href = '/';
                     return;
                 }
@@ -734,7 +755,7 @@
                 });
 
                 if (response.status === 401) {
-                    alert('登录已过期，请重新登录');
+                    showToast('登录已过期，请重新登录', 'error');
                     window.location.href = '/';
                     return;
                 }
@@ -825,11 +846,12 @@
         // ========== 分享功能 ==========
         function openShareModal() {
             if (messages.length === 0) {
-                alert('暂无聊天记录');
+                showToast('暂无聊天记录', 'info');
                 return;
             }
 
             selectedMessages.clear();
+            document.getElementById('selectAll').checked = false;
             renderShareMessages();
             document.getElementById('shareModal').classList.add('active');
             updateGenerateButton();
@@ -976,7 +998,7 @@
 
             } catch (error) {
                 console.error('生成图片失败:', error);
-                alert('生成图片失败，请重试');
+                showToast('生成图片失败，请重试', 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = '生成分享图';
@@ -997,7 +1019,7 @@
             a.click();
 
             document.getElementById('previewModal').classList.remove('active');
-            alert('图片已保存！');
+            showToast('图片已保存！', 'success');
         }
 
         // 初始化
