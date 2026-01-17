@@ -5,11 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人中心 - Between Us</title>
     <link rel="stylesheet" href="/static/css/common.css">
+    <style>
+        /* 返回按钮优化 */
+        body.profile-page .profile-back {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--home-border);
+            color: var(--home-ink);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(74, 59, 57, 0.08);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        body.profile-page .profile-back:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(-2px);
+            box-shadow: 0 6px 16px rgba(74, 59, 57, 0.12);
+        }
+
+        body.profile-page .profile-back:active {
+            transform: scale(0.95);
+        }
+
+        body.profile-page .profile-spacer {
+            width: 38px;
+        }
+    </style>
 </head>
 <body class="profile-page">
     <div class="container">
         <header class="profile-header">
-            <button class="profile-back" onclick="window.location.href='/home'">← 返回</button>
+            <button class="profile-back" onclick="window.location.href='/home'" aria-label="返回">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 18l-6-6 6-6"/>
+                            </svg>
+                        </button>
             <div class="profile-title">个人中心</div>
             <div class="profile-spacer" aria-hidden="true"></div>
         </header>
