@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>首页 - 情感陪伴助手</title>
+    <title>Home - Between Us</title>
     <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 </head>
 <body class="home-page">
     <div class="container">
         <div class="home-container">
             <div class="home-banner">
                 <div class="home-intro">今日主题 · 温柔疗愈</div>
-                <h1>💝 情感陪伴助手</h1>
+                <h1>💝 Between Us</h1>
                 <p>与 AI 一起守护您的情感世界</p>
             </div>
 
@@ -73,11 +70,44 @@
         </div>
     </div>
 
+    <!-- 冷静期倒计时模态框 -->
+    <div id="cooldownModal" class="modal-overlay">
+        <div class="modal-card modal-card-soft">
+            <div class="modal-tag">冷静期倒计时</div>
+            <h2 class="modal-title">给彼此一点缓冲的空间</h2>
+            <p class="modal-subtitle">这段时间里，你们仍被认真对待。如果想挽回，随时可以撤销解绑。</p>
+            <div class="cooldown-panel">
+                <div class="cooldown-label">剩余时间</div>
+                <div id="cooldownTime" class="cooldown-time">--</div>
+                <div id="cooldownMeta" class="cooldown-meta">--</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="cancelUnbind()">撤销解绑</button>
+                <button class="btn btn-secondary" onclick="closeCooldownModal()">继续冷静</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 绑定成功仪式弹窗 -->
+    <div id="bindSuccessModal" class="modal-overlay">
+        <div class="modal-card modal-card-success">
+            <div class="success-icon">💞</div>
+            <h2 class="modal-title">绑定完成</h2>
+            <p class="modal-subtitle">从这一刻起，你们的关系被温柔看见。</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="enterLounge()">进入情感客厅</button>
+                <button class="btn btn-secondary" onclick="closeBindSuccessModal()">稍后</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 礼花容器 -->
     <div id="fireworks" class="fireworks"></div>
 
     <script>
         let userData = null;
+        let cooldownEndAt = null;
+        let cooldownTimer = null;
 
         async function loadUserInfo() {
             try {
@@ -89,17 +119,27 @@
                     document.getElementById('userPhone').textContent = userData.phone;
 
                     if (userData.has_partner) {
-                        document.getElementById('bindingStatus').textContent = '已绑定 ❤️';
-                        document.getElementById('unbindBtn').style.display = 'block';
                         document.getElementById('bindBtn').style.display = 'none';
+                        document.getElementById('unbindBtn').style.display = 'block';
                         document.getElementById('loungeBtn').style.opacity = '1';
                         document.getElementById('loungeBtn').style.pointerEvents = 'auto';
+
+                        if (userData.unbind_at) {
+                            document.getElementById('bindingStatus').textContent = '冷静期中 ⏳';
+                            updateUnbindButtonState(true);
+                            setCooldownFromServer(userData.unbind_at);
+                        } else {
+                            document.getElementById('bindingStatus').textContent = '已绑定 ❤️';
+                            updateUnbindButtonState(false);
+                            clearCooldownState();
+                        }
                     } else {
                         document.getElementById('bindingStatus').textContent = '未绑定';
                         document.getElementById('unbindBtn').style.display = 'none';
                         document.getElementById('bindBtn').style.display = 'block';
                         document.getElementById('loungeBtn').style.opacity = '0.5';
                         document.getElementById('loungeBtn').style.pointerEvents = 'none';
+                        clearCooldownState();
 
                         // 获取绑定码
                         const codeResponse = await fetch('/api/binding/code');
@@ -134,11 +174,37 @@
         }
 
         function showUnbindModal() {
+            if (cooldownEndAt) {
+                showCooldownModal();
+                return;
+            }
             document.getElementById('unbindModal').style.display = 'flex';
         }
 
         function closeUnbindModal() {
             document.getElementById('unbindModal').style.display = 'none';
+        }
+
+        function showCooldownModal() {
+            document.getElementById('cooldownModal').style.display = 'flex';
+            startCooldownTimer();
+        }
+
+        function closeCooldownModal() {
+            document.getElementById('cooldownModal').style.display = 'none';
+            stopCooldownTimer();
+        }
+
+        function showBindSuccessModal() {
+            document.getElementById('bindSuccessModal').style.display = 'flex';
+        }
+
+        function closeBindSuccessModal() {
+            document.getElementById('bindSuccessModal').style.display = 'none';
+        }
+
+        function enterLounge() {
+            window.location.href = '/lounge';
         }
 
         async function bindPartner() {
@@ -157,12 +223,12 @@
 
                 const data = await response.json();
                 if (data.success) {
-                    showFireworks();
+                    closeBindModal();
+                    showRitualCelebration();
                     setTimeout(() => {
-                        alert('绑定成功！🎉');
-                        closeBindModal();
+                        showBindSuccessModal();
                         loadUserInfo();
-                    }, 2000);
+                    }, 1200);
                 } else {
                     alert(data.message || '绑定失败');
                 }
@@ -181,8 +247,9 @@
 
                 const data = await response.json();
                 if (data.success) {
-                    alert(data.message);
                     closeUnbindModal();
+                    setCooldownFromServer(data.unbind_at);
+                    showCooldownModal();
                     loadUserInfo();
                 } else {
                     alert(data.message || '解绑失败');
@@ -193,23 +260,141 @@
             }
         }
 
-        function showFireworks() {
+        function showRitualCelebration() {
             const container = document.getElementById('fireworks');
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#fd79a8'];
+            if (!container) return;
+            container.innerHTML = '';
+            container.classList.add('active');
 
-            for (let i = 0; i < 50; i++) {
-                setTimeout(() => {
-                    const firework = document.createElement('div');
-                    firework.className = 'firework';
-                    firework.style.left = '50%';
-                    firework.style.top = '50%';
-                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
-                    firework.style.setProperty('--x', `${(Math.random() - 0.5) * 1000}px`);
-                    firework.style.setProperty('--y', `${(Math.random() - 0.5) * 1000}px`);
-                    container.appendChild(firework);
+            const glow = document.createElement('div');
+            glow.className = 'ritual-glow';
+            container.appendChild(glow);
 
-                    setTimeout(() => firework.remove(), 1000);
-                }, i * 30);
+            const icons = ['💗', '🌸', '✨', '💞', '💫'];
+            const count = 120;
+            for (let i = 0; i < count; i += 1) {
+                const particle = document.createElement('div');
+                particle.className = 'ritual-particle';
+                particle.textContent = icons[Math.floor(Math.random() * icons.length)];
+                const x = (Math.random() - 0.5) * 80;
+                const y = (Math.random() - 0.5) * 70 - 10;
+                const scale = 0.7 + Math.random() * 0.8;
+                const rotate = (Math.random() - 0.5) * 120;
+                const delay = Math.random() * 0.5;
+                const duration = 1.8 + Math.random() * 1.2;
+
+                particle.style.setProperty('--x', `${x}vw`);
+                particle.style.setProperty('--y', `${y}vh`);
+                particle.style.setProperty('--scale', scale.toFixed(2));
+                particle.style.setProperty('--rotate', `${rotate.toFixed(0)}deg`);
+                particle.style.setProperty('--delay', `${delay.toFixed(2)}s`);
+                particle.style.setProperty('--dur', `${duration.toFixed(2)}s`);
+                particle.style.fontSize = `${14 + Math.random() * 10}px`;
+                container.appendChild(particle);
+            }
+
+            setTimeout(() => {
+                container.classList.remove('active');
+                container.innerHTML = '';
+            }, 2600);
+        }
+
+        function updateUnbindButtonState(isCoolingDown) {
+            const unbindBtn = document.getElementById('unbindBtn');
+            if (!unbindBtn) return;
+            if (isCoolingDown) {
+                unbindBtn.textContent = '查看倒计时';
+                unbindBtn.classList.add('is-cooldown');
+            } else {
+                unbindBtn.textContent = '解绑伴侣';
+                unbindBtn.classList.remove('is-cooldown');
+            }
+        }
+
+        function setCooldownFromServer(unbindAt) {
+            if (!unbindAt) return;
+            const startTime = new Date(unbindAt);
+            const endTime = new Date(startTime.getTime() + 30 * 24 * 60 * 60 * 1000);
+            cooldownEndAt = endTime;
+            localStorage.setItem('unbindAt', startTime.toISOString());
+            updateUnbindButtonState(true);
+            startCooldownTimer();
+        }
+
+        function clearCooldownState() {
+            cooldownEndAt = null;
+            localStorage.removeItem('unbindAt');
+            updateUnbindButtonState(false);
+            stopCooldownTimer();
+        }
+
+        function startCooldownTimer() {
+            stopCooldownTimer();
+            updateCooldownDisplay();
+            cooldownTimer = setInterval(updateCooldownDisplay, 1000);
+        }
+
+        function stopCooldownTimer() {
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+                cooldownTimer = null;
+            }
+        }
+
+        function updateCooldownDisplay() {
+            const timeEl = document.getElementById('cooldownTime');
+            const metaEl = document.getElementById('cooldownMeta');
+            if (!cooldownEndAt || !timeEl || !metaEl) return;
+
+            const now = new Date();
+            let diff = cooldownEndAt - now;
+            if (diff <= 0) {
+                timeEl.textContent = '冷静期已结束';
+                timeEl.classList.add('is-urgent');
+                metaEl.textContent = '冷静期已结束，解绑即将生效。';
+                return;
+            }
+
+            const twoDaysMs = 48 * 60 * 60 * 1000;
+            if (diff <= twoDaysMs) {
+                const totalSeconds = Math.floor(diff / 1000);
+                const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const seconds = String(totalSeconds % 60).padStart(2, '0');
+                timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+                timeEl.classList.add('is-urgent');
+                metaEl.textContent = '冷静期进入最后 48 小时。';
+                return;
+            }
+
+            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            timeEl.textContent = `${days}天${hours}小时`;
+            timeEl.classList.remove('is-urgent');
+            const dateText = cooldownEndAt.toLocaleDateString('zh-CN', {
+                month: '2-digit',
+                day: '2-digit'
+            });
+            metaEl.textContent = `预计 ${dateText} 生效`;
+        }
+
+        async function cancelUnbind() {
+            try {
+                const response = await fetch('/api/binding/cancel_unbind', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    closeCooldownModal();
+                    clearCooldownState();
+                    loadUserInfo();
+                } else {
+                    alert(data.message || '撤销失败');
+                }
+            } catch (error) {
+                alert('网络错误');
+                console.error(error);
             }
         }
 

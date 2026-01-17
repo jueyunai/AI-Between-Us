@@ -1,4 +1,30 @@
 /* 公共样式 */
+
+/* 本地字体定义 */
+@font-face {
+    font-family: 'Noto Sans SC';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/static/fonts/NotoSansSC-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Noto Sans SC';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/static/fonts/NotoSansSC-Medium.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'ZCOOL XiaoWei';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/static/fonts/ZCOOLXiaoWei-Regular.woff2') format('woff2');
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -792,6 +818,87 @@ body.home-page .modal-actions {
     gap: 10px;
 }
 
+body.home-page .modal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--home-chip);
+    color: var(--home-chip-text);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
+
+body.home-page .modal-card-soft::after {
+    opacity: 0.4;
+}
+
+body.home-page .modal-card-success {
+    text-align: center;
+}
+
+body.home-page .modal-card-success::after {
+    width: 200px;
+    height: 200px;
+    right: -100px;
+    top: -100px;
+}
+
+body.home-page .success-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+    color: white;
+    font-size: 26px;
+    margin: 0 auto 12px;
+    box-shadow: 0 14px 28px rgba(230, 168, 164, 0.35);
+}
+
+body.home-page .cooldown-panel {
+    border-radius: 18px;
+    padding: 14px;
+    border: 1px solid var(--home-border);
+    background: rgba(255, 255, 255, 0.9);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+body.home-page .cooldown-label {
+    font-size: 12px;
+    color: var(--home-muted);
+    margin-bottom: 6px;
+}
+
+body.home-page .cooldown-time {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--home-ink);
+    letter-spacing: 0.08em;
+}
+
+body.home-page .cooldown-time.is-urgent {
+    color: var(--home-accent);
+    font-size: 26px;
+    animation: cooldownPulse 1.2s ease-in-out infinite;
+}
+
+body.home-page .cooldown-meta {
+    font-size: 12px;
+    color: var(--home-muted);
+    margin-top: 6px;
+}
+
+body.home-page .btn.is-cooldown {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--home-line);
+    color: var(--home-ink);
+}
+
 body.home-page .home-shape {
     position: fixed;
     border-radius: 50%;
@@ -831,32 +938,72 @@ body.home-page .home-shape-3 {
     }
 }
 
-/* 绑定动效 */
-@keyframes fireworks {
+@keyframes cooldownPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* 绑定仪式动效 */
+.fireworks {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fireworks.active {
+    opacity: 1;
+}
+
+.fireworks .ritual-glow {
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(circle, rgba(230, 168, 164, 0.45) 0%, rgba(199, 178, 255, 0.15) 45%, transparent 70%);
+    animation: ritualGlow 2.2s ease-out forwards;
+    opacity: 0;
+}
+
+.fireworks .ritual-particle {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    opacity: 0;
+    animation: ritualBloom var(--dur, 2.2s) ease-out forwards;
+    animation-delay: var(--delay, 0s);
+    filter: drop-shadow(0 6px 10px rgba(74, 59, 57, 0.12));
+}
+
+@keyframes ritualBloom {
     0% {
-        transform: translate(0, 0);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    }
+    20% {
         opacity: 1;
     }
     100% {
-        transform: translate(var(--x), var(--y));
         opacity: 0;
+        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(var(--scale, 1)) rotate(var(--rotate, 0deg));
     }
 }
 
-.fireworks {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-.firework {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    animation: fireworks 1s ease-out forwards;
+@keyframes ritualGlow {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    50% {
+        opacity: 0.85;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.1);
+    }
 }
