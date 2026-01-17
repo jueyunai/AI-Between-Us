@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情感客厅 - 情感陪伴助手</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <button class="back-btn" onclick="window.location.href='/home'">← 返回</button>
+                <h2>💑 情感客厅</h2>
+                <div class="ai-icon" ondblclick="callAI()" title="双击召唤AI助手">AI</div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- 消息列表 -->
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="说说你的想法... (输入@AI可召唤助手)" onkeypress="handleEnter(event)">
+                <button class="send-btn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let roomId = null;
+        let userId = null;
+        let messages = [];
+
+        async function init() {
+            // 获取用户信息
+            const userResponse = await fetch('/api/user/info');
+
+            // 检查是否需要重新登录
+            if (userResponse.status === 401) {
+                alert('登录已过期，请重新登录');
+                window.location.href = '/';
+                return;
+            }
+
+            const userData = await userResponse.json();
+
+            if (!userData.success || !userData.user.has_partner) {
+                alert('您还没有绑定伴侣，无法进入情感客厅');
+                window.location.href = '/home';
+                return;
+            }
+
+            userId = userData.user.id;
+
+            // 获取房间信息
+            const roomResponse = await fetch('/api/lounge/room');
+
+            if (roomResponse.status === 401) {
+                alert('登录已过期，请重新登录');
+                window.location.href = '/';
+                return;
+            }
+
+            const roomData = await roomResponse.json();
+
+            if (!roomData.success) {
+                alert('无法获取房间信息');
+                window.location.href = '/home';
+                return;
+            }
+
+            roomId = roomData.room_id;
+
+            // 加载历史记录
+            await loadHistory();
+
+            // 连接 WebSocket
+            connectWebSocket();
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/lounge/history');
+                const data = await response.json();
+
+                if (data.success) {
+                    messages = data.messages;
+                    renderMessages();
+                }
+            } catch (error) {
+                console.error('加载历史记录失败', error);
+            }
+        }
+
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/lounge/${roomId}`;
+
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                console.log('WebSocket 已连接');
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.event === 'new_message') {
+                    messages.push(data.message);
+                    renderMessages();
+                }
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket 已断开');
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket 错误:', error);
+            };
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+
+            messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+
+                if (msg.role === 'assistant') {
+                    messageDiv.className = 'message assistant';
+                } else if (msg.user_id === userId) {
+                    messageDiv.className = 'message user';
+                } else {
+                    messageDiv.className = 'message partner';
+                }
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = msg.content;
+
+                messageDiv.appendChild(contentDiv);
+                container.appendChild(messageDiv);
+            });
+
+            // 滚动到底部
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            // 检查是否召唤 AI
+            if (content.includes('@AI')) {
+                callAI();
+                input.value = '';
+                return;
+            }
+
+            // 发送消息
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    event: 'send_message',
+                    user_id: userId,
+                    content: content
+                }));
+            }
+
+            input.value = '';
+        }
+
+        function callAI() {
+            // 显示 AI 正在响应
+            const loadingMsg = {
+                role: 'assistant',
+                content: '🤖 AI助手正在分析你们的对话...'
+            };
+            messages.push(loadingMsg);
+            renderMessages();
+
+            // 召唤 AI
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    event: 'call_ai'
+                }));
+            }
+
+            // 移除加载消息（实际消息会通过 WebSocket 接收）
+            setTimeout(() => {
+                messages = messages.filter(m => m.content !== loadingMsg.content);
+                renderMessages();
+            }, 500);
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

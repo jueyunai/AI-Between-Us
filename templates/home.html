@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 情感陪伴助手</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+</head>
+<body>
+    <div class="container">
+        <div class="home-container">
+            <div class="home-banner">
+                <h1>💝 情感陪伴助手</h1>
+                <p>与 AI 一起守护您的情感世界</p>
+            </div>
+
+            <div class="user-info" id="userInfo">
+                <p><strong>手机号：</strong><span id="userPhone">--</span></p>
+                <p><strong>绑定状态：</strong><span id="bindingStatus">未绑定</span></p>
+                <p id="bindingCodeDisplay" style="display: none;">
+                    <strong>我的绑定码：</strong>
+                    <span id="bindingCode" style="font-size: 24px; color: #667eea; font-weight: bold;">------</span>
+                    <button onclick="copyBindingCode()" style="margin-left: 10px; padding: 4px 12px; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer;">复制</button>
+                </p>
+            </div>
+
+            <div class="function-buttons">
+                <a href="/coach" class="function-btn">💬 个人教练</a>
+                <a href="/lounge" class="function-btn" id="loungeBtn">💑 情感客厅</a>
+            </div>
+
+            <div class="user-actions">
+                <button class="btn btn-secondary" onclick="showBindModal()">绑定伴侣</button>
+                <button class="btn btn-secondary" onclick="showUnbindModal()" id="unbindBtn" style="display: none;">解绑伴侣</button>
+                <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 绑定模态框 -->
+    <div id="bindModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="max-width: 400px; margin: 20px;">
+            <h2 style="margin-bottom: 20px;">绑定伴侣</h2>
+            <div class="input-group">
+                <label>输入伴侣的绑定码</label>
+                <input type="text" id="partnerCode" placeholder="请输入6位绑定码">
+            </div>
+            <button class="btn btn-primary" onclick="bindPartner()">确认绑定</button>
+            <button class="btn btn-secondary" onclick="closeBindModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- 解绑模态框 -->
+    <div id="unbindModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="max-width: 400px; margin: 20px;">
+            <h2 style="margin-bottom: 20px;">解绑伴侣</h2>
+            <p style="margin-bottom: 20px; color: #666;">解绑后将进入1个月冷静期，冷静期内可撤销。确定要解绑吗？</p>
+            <button class="btn btn-primary" onclick="unbindPartner()">确认解绑</button>
+            <button class="btn btn-secondary" onclick="closeUnbindModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- 礼花容器 -->
+    <div id="fireworks" class="fireworks"></div>
+
+    <script>
+        let userData = null;
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user/info');
+                const data = await response.json();
+
+                if (data.success) {
+                    userData = data.user;
+                    document.getElementById('userPhone').textContent = userData.phone;
+
+                    if (userData.has_partner) {
+                        document.getElementById('bindingStatus').textContent = '已绑定 ❤️';
+                        document.getElementById('unbindBtn').style.display = 'block';
+                        document.getElementById('loungeBtn').style.opacity = '1';
+                        document.getElementById('loungeBtn').style.pointerEvents = 'auto';
+                    } else {
+                        document.getElementById('bindingStatus').textContent = '未绑定';
+                        document.getElementById('loungeBtn').style.opacity = '0.5';
+                        document.getElementById('loungeBtn').style.pointerEvents = 'none';
+
+                        // 获取绑定码
+                        const codeResponse = await fetch('/api/binding/code');
+                        const codeData = await codeResponse.json();
+                        if (codeData.success) {
+                            document.getElementById('bindingCode').textContent = codeData.binding_code;
+                            document.getElementById('bindingCodeDisplay').style.display = 'block';
+                        }
+                    }
+                } else {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error(error);
+                window.location.href = '/';
+            }
+        }
+
+        function copyBindingCode() {
+            const code = document.getElementById('bindingCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('绑定码已复制到剪贴板！');
+            });
+        }
+
+        function showBindModal() {
+            document.getElementById('bindModal').style.display = 'flex';
+        }
+
+        function closeBindModal() {
+            document.getElementById('bindModal').style.display = 'none';
+        }
+
+        function showUnbindModal() {
+            document.getElementById('unbindModal').style.display = 'flex';
+        }
+
+        function closeUnbindModal() {
+            document.getElementById('unbindModal').style.display = 'none';
+        }
+
+        async function bindPartner() {
+            const code = document.getElementById('partnerCode').value.trim();
+            if (!code) {
+                alert('请输入绑定码');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/binding/bind', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ binding_code: code })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showFireworks();
+                    setTimeout(() => {
+                        alert('绑定成功！🎉');
+                        closeBindModal();
+                        loadUserInfo();
+                    }, 2000);
+                } else {
+                    alert(data.message || '绑定失败');
+                }
+            } catch (error) {
+                alert('网络错误');
+                console.error(error);
+            }
+        }
+
+        async function unbindPartner() {
+            try {
+                const response = await fetch('/api/binding/unbind', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    closeUnbindModal();
+                    loadUserInfo();
+                } else {
+                    alert(data.message || '解绑失败');
+                }
+            } catch (error) {
+                alert('网络错误');
+                console.error(error);
+            }
+        }
+
+        function showFireworks() {
+            const container = document.getElementById('fireworks');
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#fd79a8'];
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = '50%';
+                    firework.style.top = '50%';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.setProperty('--x', `${(Math.random() - 0.5) * 1000}px`);
+                    firework.style.setProperty('--y', `${(Math.random() - 0.5) * 1000}px`);
+                    container.appendChild(firework);
+
+                    setTimeout(() => firework.remove(), 1000);
+                }, i * 30);
+            }
+        }
+
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => {
+                    localStorage.clear();
+                    window.location.href = '/';
+                });
+        }
+
+        loadUserInfo();
+    </script>
+</body>
+</html>
