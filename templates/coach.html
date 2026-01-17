@@ -1,77 +1,109 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人教练 - 情感陪伴助手</title>
     <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         /* 思考过程折叠样式 */
         .thinking-container {
             margin-bottom: 8px;
         }
+
         .thinking-toggle {
             display: flex;
             align-items: center;
             cursor: pointer;
-            color: #8b5cf6;
+            color: var(--home-accent);
             font-size: 13px;
             padding: 6px 10px;
-            background: rgba(139, 92, 246, 0.1);
+            background: var(--home-chip);
             border-radius: 8px;
             margin-bottom: 8px;
             transition: all 0.2s;
         }
+
         .thinking-toggle:hover {
-            background: rgba(139, 92, 246, 0.2);
+            background: rgba(230, 168, 164, 0.28);
         }
+
         .thinking-toggle .icon {
             margin-right: 6px;
             transition: transform 0.3s;
         }
+
         .thinking-toggle.collapsed .icon {
             transform: rotate(-90deg);
         }
+
         .thinking-content {
             padding: 10px 12px;
-            background: rgba(139, 92, 246, 0.05);
-            border-left: 3px solid #8b5cf6;
+            background: rgba(230, 168, 164, 0.08);
+            border-left: 3px solid var(--home-accent);
             border-radius: 0 8px 8px 0;
             font-size: 13px;
-            color: #666;
+            color: var(--home-muted);
             line-height: 1.6;
             white-space: pre-wrap;
             max-height: 300px;
             overflow-y: auto;
             transition: all 0.3s ease;
         }
+
         .thinking-content.collapsed {
             max-height: 0;
             padding: 0 12px;
             overflow: hidden;
             opacity: 0;
         }
+
         .thinking-content.streaming {
             animation: pulse 1.5s infinite;
         }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
+
         /* 流式输出光标 */
         .streaming-cursor {
             display: inline-block;
             width: 2px;
             height: 1em;
-            background: #8b5cf6;
+            background: var(--home-accent);
             margin-left: 2px;
             animation: blink 0.8s infinite;
         }
+
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
+
         /* 正文内容样式 */
         .answer-content {
             white-space: pre-wrap;
@@ -86,141 +118,180 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(74, 59, 57, 0.35);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(6px);
+            padding: 20px;
         }
+
         .share-modal.active {
             display: flex;
         }
+
         .share-container {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
+            background: var(--home-card);
+            border-radius: 22px;
+            width: min(92vw, 480px);
             max-height: 85vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            border: 1px solid var(--home-border);
+            box-shadow: var(--home-shadow);
         }
+
         .share-header {
             padding: 16px 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--home-line);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(255, 255, 255, 0.7);
         }
+
         .share-header h3 {
             margin: 0;
             font-size: 18px;
-            color: #333;
+            color: var(--home-ink);
+            font-family: "ZCOOL XiaoWei", serif;
         }
+
         .share-close {
-            background: none;
+            background: var(--home-chip);
             border: none;
-            font-size: 24px;
+            font-size: 18px;
             cursor: pointer;
-            color: #999;
-            padding: 0;
+            color: var(--home-ink);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             line-height: 1;
         }
+
         .share-close:hover {
-            color: #666;
+            background: rgba(230, 168, 164, 0.28);
         }
+
         .share-select-all {
             padding: 12px 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--home-line);
             display: flex;
             align-items: center;
             gap: 8px;
+            background: rgba(255, 255, 255, 0.7);
         }
+
         .share-select-all label {
             cursor: pointer;
-            color: #666;
+            color: var(--home-muted);
             font-size: 14px;
         }
+
         .share-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 16px 20px;
+            padding: 16px 20px 20px;
+            background: rgba(255, 255, 255, 0.55);
         }
+
         .share-message-item {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 12px;
-            background: #f8f9fa;
+            gap: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--home-line);
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: 0 8px 18px rgba(74, 59, 57, 0.08);
         }
+
         .share-message-item:hover {
-            background: #f0f1f3;
+            background: rgba(255, 255, 255, 0.98);
         }
+
         .share-message-item.selected {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: rgba(230, 168, 164, 0.16);
+            border: 1px solid rgba(230, 168, 164, 0.35);
         }
+
         .share-message-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
             margin-top: 2px;
-            accent-color: #8b5cf6;
+            accent-color: var(--home-accent);
         }
+
         .share-message-content {
             flex: 1;
         }
+
         .share-message-role {
-            font-size: 12px;
-            color: #8b5cf6;
+            font-size: 13px;
+            color: var(--home-accent-2);
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
+
         .share-message-item.user .share-message-role {
-            color: #10b981;
+            color: var(--home-accent);
         }
+
         .share-message-text {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.5;
+            font-size: 15px;
+            color: var(--home-ink);
+            line-height: 1.7;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         .share-footer {
             padding: 16px 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--home-line);
             display: flex;
             gap: 12px;
+            background: rgba(255, 255, 255, 0.8);
         }
+
         .share-footer button {
             flex: 1;
             padding: 12px;
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: 999px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .share-btn-cancel {
-            background: #f0f0f0;
-            border: none;
-            color: #666;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--home-line);
+            color: var(--home-ink);
         }
+
         .share-btn-cancel:hover {
-            background: #e0e0e0;
+            background: rgba(255, 255, 255, 0.98);
         }
+
         .share-btn-generate {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
             border: none;
             color: white;
         }
+
         .share-btn-generate:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 4px 12px rgba(230, 168, 164, 0.45);
         }
+
         .share-btn-generate:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -236,55 +307,68 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(74, 59, 57, 0.5);
             z-index: 1001;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             padding: 20px;
+            backdrop-filter: blur(6px);
         }
+
         .preview-modal.active {
             display: flex;
         }
+
         .preview-image-container {
             max-width: 100%;
             max-height: 70vh;
             overflow: auto;
-            border-radius: 12px;
-            background: white;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--home-border);
+            box-shadow: var(--home-shadow);
+            padding: 8px;
         }
+
         .preview-image-container img {
             display: block;
             max-width: 100%;
         }
+
         .preview-actions {
             margin-top: 20px;
             display: flex;
             gap: 12px;
         }
+
         .preview-actions button {
-            padding: 12px 32px;
-            border-radius: 10px;
-            font-size: 15px;
+            padding: 12px 28px;
+            border-radius: 999px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .preview-btn-back {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--home-line);
+            color: var(--home-ink);
         }
+
         .preview-btn-back:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.98);
         }
+
         .preview-btn-save {
-            background: linear-gradient(135deg, #10b981, #34d399);
+            background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
             border: none;
             color: white;
         }
+
         .preview-btn-save:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 4px 12px rgba(230, 168, 164, 0.45);
         }
 
         /* 分享图片模板（隐藏，用于生成图片） */
@@ -293,39 +377,46 @@
             left: -9999px;
             top: -9999px;
             width: 400px;
-            background: linear-gradient(180deg, #f8f5ff 0%, #ffffff 100%);
+            background: linear-gradient(180deg, #fdf8f1 0%, #ffffff 100%);
             padding: 24px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
         .share-image-header {
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px dashed #e0d4f7;
         }
+
         .share-image-title {
             font-size: 20px;
-            color: #8b5cf6;
+            color: var(--home-accent);
             margin: 0 0 8px 0;
         }
+
         .share-image-subtitle {
             font-size: 12px;
             color: #999;
         }
+
         .share-image-messages {
             margin-bottom: 20px;
         }
+
         .share-image-message {
             margin-bottom: 12px;
             padding: 12px;
             border-radius: 12px;
         }
+
         .share-image-message.user {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
             color: white;
             margin-left: 40px;
             border-bottom-right-radius: 4px;
         }
+
         .share-image-message.assistant {
             background: white;
             color: #333;
@@ -333,40 +424,47 @@
             border-bottom-left-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
+
         .share-image-message-role {
             font-size: 11px;
             opacity: 0.8;
             margin-bottom: 4px;
         }
+
         .share-image-message-text {
             font-size: 14px;
             line-height: 1.6;
             word-break: break-word;
         }
+
         .share-image-footer {
             text-align: center;
             padding-top: 16px;
             border-top: 1px dashed #e0d4f7;
         }
+
         .share-image-footer-text {
             font-size: 12px;
             color: #999;
         }
+
         .share-image-footer-brand {
             font-size: 14px;
-            color: #8b5cf6;
+            color: var(--home-accent);
             font-weight: 500;
             margin-top: 4px;
         }
     </style>
 </head>
-<body>
+
+<body class="coach-page">
     <div class="container">
         <div class="chat-container">
             <div class="chat-header">
                 <button class="back-btn" onclick="window.location.href='/home'">← 返回</button>
                 <h2>💬 个人教练</h2>
-                <button class="back-btn" onclick="openShareModal()" style="background: rgba(255,255,255,0.2);">分享</button>
+                <button class="back-btn" onclick="openShareModal()"
+                    style="background: rgba(255,255,255,0.2);">分享</button>
             </div>
 
             <div class="chat-messages" id="chatMessages">
@@ -379,6 +477,10 @@
             </div>
         </div>
     </div>
+
+    <div class="gentle-shape gentle-shape-1" aria-hidden="true"></div>
+    <div class="gentle-shape gentle-shape-2" aria-hidden="true"></div>
+    <div class="gentle-shape gentle-shape-3" aria-hidden="true"></div>
 
     <!-- 分享选择模态框 -->
     <div class="share-modal" id="shareModal">
@@ -407,7 +509,7 @@
             <img id="previewImage" src="" alt="分享预览">
         </div>
         <div class="preview-actions">
-            <button class="preview-btn-back" onclick="closePreviewModal()">返回编辑</button>
+            <button class="preview-btn-back" onclick="closePreviewModal()">重新选择</button>
             <button class="preview-btn-save" onclick="saveImage()">保存图片</button>
         </div>
     </div>
@@ -472,12 +574,12 @@
                     const thinkingToggle = document.createElement('div');
                     thinkingToggle.className = 'thinking-toggle collapsed';
                     thinkingToggle.innerHTML = '<span class="icon">▼</span><span>🧠 思考过程（点击展开）</span>';
-                    
+
                     const thinkingContent = document.createElement('div');
                     thinkingContent.className = 'thinking-content collapsed';
                     thinkingContent.textContent = msg.reasoning_content;
 
-                    thinkingToggle.onclick = function() {
+                    thinkingToggle.onclick = function () {
                         this.classList.toggle('collapsed');
                         thinkingContent.classList.toggle('collapsed');
                     };
@@ -503,7 +605,7 @@
 
         function createStreamingMessage() {
             const container = document.getElementById('chatMessages');
-            
+
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message assistant';
             messageDiv.id = 'streamingMessage';
@@ -519,7 +621,7 @@
             const thinkingToggle = document.createElement('div');
             thinkingToggle.className = 'thinking-toggle';
             thinkingToggle.innerHTML = '<span class="icon">▼</span><span>🧠 思考中...</span>';
-            thinkingToggle.onclick = function() {
+            thinkingToggle.onclick = function () {
                 this.classList.toggle('collapsed');
                 document.getElementById('thinkingContent').classList.toggle('collapsed');
             };
@@ -592,7 +694,7 @@
                         if (line.startsWith('data: ')) {
                             try {
                                 const data = JSON.parse(line.slice(6));
-                                
+
                                 if (data.type === 'reasoning') {
                                     if (!hasReasoning) {
                                         hasReasoning = true;
@@ -617,17 +719,17 @@
                                     answerText += data.content;
                                     const answerEl = document.getElementById('answerContent');
                                     answerEl.innerHTML = answerText + '<span class="streaming-cursor"></span>';
-                                    
+
                                     const container = document.getElementById('chatMessages');
                                     container.scrollTop = container.scrollHeight;
                                 }
                                 else if (data.type === 'done') {
                                     const answerEl = document.getElementById('answerContent');
                                     answerEl.textContent = data.final_content || answerText;
-                                    
+
                                     if (data.final_content) {
-                                        messages.push({ 
-                                            role: 'assistant', 
+                                        messages.push({
+                                            role: 'assistant',
                                             content: data.final_content,
                                             reasoning_content: data.reasoning_content || null
                                         });
@@ -738,7 +840,7 @@
         function toggleSelectAll() {
             const selectAll = document.getElementById('selectAll').checked;
             const checkboxes = document.querySelectorAll('.share-message-item input[type="checkbox"]');
-            
+
             if (selectAll) {
                 messages.forEach((_, i) => selectedMessages.add(i));
             } else {
@@ -843,4 +945,5 @@
         loadHistory();
     </script>
 </body>
+
 </html>

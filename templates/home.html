@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>首页 - 情感陪伴助手</title>
     <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="home-page">
     <div class="container">
         <div class="home-container">
             <div class="home-banner">
+                <div class="home-intro">今日主题 · 温柔疗愈</div>
                 <h1>💝 情感陪伴助手</h1>
                 <p>与 AI 一起守护您的情感世界</p>
             </div>
@@ -17,46 +21,55 @@
             <div class="user-info" id="userInfo">
                 <p><strong>手机号：</strong><span id="userPhone">--</span></p>
                 <p><strong>绑定状态：</strong><span id="bindingStatus">未绑定</span></p>
-                <p id="bindingCodeDisplay" style="display: none;">
+                <p id="bindingCodeDisplay" class="binding-code" style="display: none;">
                     <strong>我的绑定码：</strong>
-                    <span id="bindingCode" style="font-size: 24px; color: #667eea; font-weight: bold;">------</span>
-                    <button onclick="copyBindingCode()" style="margin-left: 10px; padding: 4px 12px; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer;">复制</button>
+                    <span id="bindingCode" class="binding-code-value">------</span>
+                    <button onclick="copyBindingCode()" class="binding-code-copy">复制</button>
                 </p>
             </div>
 
             <div class="function-buttons">
-                <a href="/coach" class="function-btn">💬 个人教练</a>
-                <a href="/lounge" class="function-btn" id="loungeBtn">💑 情感客厅</a>
+                <a href="/coach" class="function-btn primary">💬 个人教练</a>
+                <a href="/lounge" class="function-btn ghost" id="loungeBtn">💑 情感客厅</a>
             </div>
 
             <div class="user-actions">
-                <button class="btn btn-secondary" onclick="showBindModal()">绑定伴侣</button>
+                <button class="btn btn-secondary" onclick="showBindModal()" id="bindBtn">绑定伴侣</button>
                 <button class="btn btn-secondary" onclick="showUnbindModal()" id="unbindBtn" style="display: none;">解绑伴侣</button>
                 <button class="btn btn-secondary" onclick="logout()">退出登录</button>
             </div>
         </div>
     </div>
+    <div class="home-shape home-shape-1" aria-hidden="true"></div>
+    <div class="home-shape home-shape-2" aria-hidden="true"></div>
+    <div class="home-shape home-shape-3" aria-hidden="true"></div>
 
     <!-- 绑定模态框 -->
-    <div id="bindModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div class="card" style="max-width: 400px; margin: 20px;">
-            <h2 style="margin-bottom: 20px;">绑定伴侣</h2>
+    <div id="bindModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">绑定伴侣</h2>
+            <p class="modal-subtitle">输入对方的绑定码，一起开启亲密陪伴。</p>
             <div class="input-group">
                 <label>输入伴侣的绑定码</label>
                 <input type="text" id="partnerCode" placeholder="请输入6位绑定码">
             </div>
-            <button class="btn btn-primary" onclick="bindPartner()">确认绑定</button>
-            <button class="btn btn-secondary" onclick="closeBindModal()">取消</button>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="bindPartner()">确认绑定</button>
+                <button class="btn btn-secondary" onclick="closeBindModal()">取消</button>
+            </div>
         </div>
     </div>
 
     <!-- 解绑模态框 -->
-    <div id="unbindModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div class="card" style="max-width: 400px; margin: 20px;">
-            <h2 style="margin-bottom: 20px;">解绑伴侣</h2>
-            <p style="margin-bottom: 20px; color: #666;">解绑后将进入1个月冷静期，冷静期内可撤销。确定要解绑吗？</p>
-            <button class="btn btn-primary" onclick="unbindPartner()">确认解绑</button>
-            <button class="btn btn-secondary" onclick="closeUnbindModal()">取消</button>
+    <div id="unbindModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">解绑伴侣</h2>
+            <p class="modal-subtitle">解绑后将进入 1 个月冷静期，冷静期内可撤销。</p>
+            <p class="modal-note">确定要解绑吗？</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="unbindPartner()">确认解绑</button>
+                <button class="btn btn-secondary" onclick="closeUnbindModal()">取消</button>
+            </div>
         </div>
     </div>
 
@@ -78,10 +91,13 @@
                     if (userData.has_partner) {
                         document.getElementById('bindingStatus').textContent = '已绑定 ❤️';
                         document.getElementById('unbindBtn').style.display = 'block';
+                        document.getElementById('bindBtn').style.display = 'none';
                         document.getElementById('loungeBtn').style.opacity = '1';
                         document.getElementById('loungeBtn').style.pointerEvents = 'auto';
                     } else {
                         document.getElementById('bindingStatus').textContent = '未绑定';
+                        document.getElementById('unbindBtn').style.display = 'none';
+                        document.getElementById('bindBtn').style.display = 'block';
                         document.getElementById('loungeBtn').style.opacity = '0.5';
                         document.getElementById('loungeBtn').style.pointerEvents = 'none';
 
